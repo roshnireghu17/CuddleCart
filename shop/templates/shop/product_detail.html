@@ -1,0 +1,410 @@
+{% extends "base.html" %}
+{% load static %}
+{% load shop_extras %}
+
+{% block title %}{{ product.name }} — Handcrafted Soft Toy — CuddleCart{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{% url 'shop:home' %}" class="text-decoration-none" style="color:var(--cc-green);"><i class="fa-solid fa-house-chimney me-1"></i> Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'shop:product_list' %}" class="text-decoration-none" style="color:var(--cc-green);">Companions</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'shop:product_list' %}?category={{ product.category.id }}" class="text-decoration-none" style="color:var(--cc-green);">{{ product.category.name }}</a></li>
+      <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-width: 250px;">{{ product.name }}</li>
+    </ol>
+  </nav>
+
+  <div class="row g-5 align-items-start mb-5">
+    <!-- Left Column: Product Image Showcase -->
+    <div class="col-lg-6">
+      <div class="card-cc p-3 overflow-hidden shadow-sm" style="border-radius: var(--cc-radius-lg); background: #ffffff;">
+        <!-- Main Image Display -->
+        <div class="product-img-wrap rounded-4 overflow-hidden mb-3 position-relative" style="aspect-ratio: 1/1; background: var(--cc-sand);">
+          <img id="mainProductImage" src="{{ product.get_image }}" alt="{{ product.name }}" class="w-100 h-100 object-fit-cover transition-transform" style="transition: transform 0.3s ease;">
+          
+          <!-- Stock Badge Overlay -->
+          <div class="position-absolute top-0 start-0 m-3">
+            {% if product.stock_quantity <= 0 %}
+              <span class="stock-badge stock-badge-out shadow-sm"><i class="fa-solid fa-circle-xmark me-1"></i> Sold Out</span>
+            {% elif product.stock_quantity <= 5 %}
+              <span class="stock-badge stock-badge-low shadow-sm"><i class="fa-solid fa-fire me-1"></i> Only {{ product.stock_quantity }} Left</span>
+            {% else %}
+              <span class="stock-badge stock-badge-in shadow-sm"><i class="fa-solid fa-circle-check me-1"></i> In Stock</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Thumbnail Gallery if multiple images exist -->
+        {% if gallery_images or product.get_image %}
+        <div class="d-flex gap-2 overflow-auto py-1">
+          <!-- Main Image Thumbnail -->
+          <button type="button" class="btn p-0 rounded-3 overflow-hidden gallery-thumb-btn active border-2 border-success" style="width: 72px; height: 72px; flex-shrink: 0;" onclick="changeMainImage('{{ product.get_image }}', this)">
+            <img src="{{ product.get_image }}" alt="Thumbnail Main" class="w-100 h-100 object-fit-cover">
+          </button>
+          {% for img in gallery_images %}
+            <button type="button" class="btn p-0 rounded-3 overflow-hidden gallery-thumb-btn border" style="width: 72px; height: 72px; flex-shrink: 0;" onclick="changeMainImage('{{ img.get_image }}', this)">
+              <img src="{{ img.get_image }}" alt="{{ img.alt_text|default:'Product gallery image' }}" class="w-100 h-100 object-fit-cover">
+            </button>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right Column: Product Information & Order Actions -->
+    <div class="col-lg-6">
+      <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+        <span class="badge px-3 py-1 rounded-pill" style="background: var(--cc-green-light); color: var(--cc-green-dark); font-weight: 600;">
+          {{ product.category.name|default:"Handmade Companion" }}
+        </span>
+        {% if product.brand %}
+        <span class="badge px-3 py-1 rounded-pill bg-light text-muted border">
+          {{ product.brand }}
+        </span>
+        {% endif %}
+        <span class="badge px-3 py-1 rounded-pill" style="background: #FFF4E5; color: #B25E00; font-weight: 600;">
+          <i class="fa-solid fa-shield-heart me-1"></i> 0+ Infant Safe
+        </span>
+      </div>
+
+      <h1 class="serif-heading mb-2" style="font-size: 2.3rem; color: var(--cc-green-dark); line-height: 1.2;">{{ product.name }}</h1>
+
+      <!-- Star Rating & Review Count -->
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="star-rating text-warning">
+          {% stars_filled product.average_rating as filled %}
+          {% for i in "12345" %}
+            {% if forloop.counter <= filled %}<i class="fa-solid fa-star"></i>{% else %}<i class="fa-regular fa-star"></i>{% endif %}
+          {% endfor %}
+        </div>
+        <span class="text-muted small fw-semibold">
+          {{ product.average_rating|default:"5.0" }} / 5.0 ({{ total_reviews }} verified review{{ total_reviews|pluralize }})
+        </span>
+      </div>
+
+      <!-- Price & Dynamic Size -->
+      <div class="mb-3">
+        <span class="serif-heading fs-1 fw-bold" style="color: var(--cc-gold-dark);" id="priceDisplay">
+          ₹{{ product.price }}
+        </span>
+        <span class="small text-muted d-block">Inclusive of all taxes & complimentary gift packaging</span>
+      </div>
+
+      <!-- Size -->
+      <div class="mb-4">
+        <label class="form-label small fw-bold text-dark text-uppercase mb-2 d-block">
+          Size:
+        </label>
+        <div>
+          <span class="btn btn-cc btn-sm active px-3 py-2 fw-semibold" style="cursor: default; pointer-events: none; border-radius: var(--cc-radius);">
+            <i class="fa-solid fa-tag me-1"></i> {{ product.size|default:"Medium" }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <p class="text-muted mb-4" style="line-height: 1.75; font-size: 0.98rem;">
+        {{ product.description|default:"Handcrafted with ultra-soft organic cotton plush yarns. Designed for warm snuggles, gentle playtime, and durable everyday companionship. Each toy arrives with hand-embroidered details and child-safe stitching." }}
+      </p>
+
+      <!-- Specifications Card -->
+      <div class="card-cc p-3 mb-4 bg-light border-0" style="border-radius: var(--cc-radius);">
+        <div class="row g-3 small">
+          <div class="col-6">
+            <span class="text-muted d-block">Size Specification:</span>
+            <strong class="text-dark">{{ product.size|default:"Medium" }}</strong>
+          </div>
+          <div class="col-6">
+            <span class="text-muted d-block">Recommended Age:</span>
+            <strong class="text-dark">{{ product.age_group|default:"Suitable from 0+ months" }}</strong>
+          </div>
+          <div class="col-6">
+            <span class="text-muted d-block">Fabric & Filling:</span>
+            <strong class="text-dark">100% GOTS Organic Cotton / Poly-fill</strong>
+          </div>
+          <div class="col-6">
+            <span class="text-muted d-block">Care Guide:</span>
+            <strong class="text-dark">Gentle machine wash or spot clean</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Purchasing & Actions -->
+      {% if user.is_authenticated and not user.is_admin_role %}
+        <div class="mb-4">
+          {% if product.stock_quantity > 0 %}
+            <form method="post" action="{% url 'shop:add_to_cart' product.pk %}" class="d-flex flex-column gap-3">
+              {% csrf_token %}
+              <input type="hidden" name="size" id="formSelectedSize" value="{{ product.size|default:'Medium' }}">
+              <input type="hidden" name="next" value="{{ request.path }}">
+              
+              <div class="d-flex gap-3 align-items-center">
+                <!-- Quantity Selector -->
+                <div class="d-flex align-items-center gap-2">
+                  <span class="small fw-semibold text-muted">Quantity:</span>
+                  <div class="input-group" style="width: 120px;">
+                    <button class="btn btn-outline-secondary btn-sm" type="button" onclick="decrementQty()">-</button>
+                    <input type="number" id="cartQuantity" name="quantity" value="1" min="1" max="{{ product.stock_quantity }}" class="form-control form-control-sm text-center fw-bold">
+                    <button class="btn btn-outline-secondary btn-sm" type="button" onclick="incrementQty({{ product.stock_quantity }})">+</button>
+                  </div>
+                </div>
+
+                <!-- Wishlist Toggle Button -->
+                <button type="submit" form="wishlistDetailForm" class="btn {% if in_wishlist %}btn-danger text-white active{% else %}btn-outline-cc{% endif %} ms-auto" title="Add to Wishlist" style="width: 42px; height: 42px; padding: 0; border-radius: var(--cc-radius-pill);">
+                  <i class="{% if in_wishlist %}fa-solid fa-heart{% else %}fa-regular fa-heart{% endif %} fa-lg"></i>
+                </button>
+              </div>
+
+              <!-- Action Buttons Row: Add to Bag & Buy Now -->
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-outline-cc flex-grow-1 py-2 fw-semibold">
+                  <i class="fa-solid fa-bag-shopping me-2"></i> Add to Bag
+                </button>
+                <button type="submit" name="buy_now" value="1" class="btn btn-cc flex-grow-1 py-2 fw-semibold shadow-sm">
+                  <i class="fa-solid fa-bolt me-2"></i> Buy Now
+                </button>
+              </div>
+            </form>
+
+            <form id="wishlistDetailForm" method="post" action="{% url 'shop:add_to_wishlist' product.pk %}" class="d-none">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.path }}">
+            </form>
+          {% else %}
+            <div class="d-flex gap-2">
+              <button class="btn btn-secondary flex-grow-1 py-2" disabled>
+                <i class="fa-solid fa-ban me-2"></i> Currently Unavailable
+              </button>
+              <form method="post" action="{% url 'shop:add_to_wishlist' product.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" class="btn {% if in_wishlist %}btn-danger text-white active{% else %}btn-outline-cc{% endif %}" title="Add to Wishlist" style="width: 48px; height: 48px; padding: 0; border-radius: var(--cc-radius-pill);">
+                  <i class="{% if in_wishlist %}fa-solid fa-heart{% else %}fa-regular fa-heart{% endif %} fa-lg"></i>
+                </button>
+              </form>
+            </div>
+          {% endif %}
+        </div>
+      {% elif not user.is_authenticated %}
+        <div class="p-3 card-cc mb-4 text-center shadow-sm" style="background: var(--cc-cream-light); border-radius: var(--cc-radius);">
+          <p class="text-muted small mb-3">Sign in to add <strong>{{ product.name }}</strong> to your bag, save to your wishlist, or write a review.</p>
+          <div class="d-flex justify-content-center gap-2">
+            <a href="{% url 'shop:login' %}" class="btn btn-cc btn-sm px-4">
+              <i class="fa-solid fa-right-to-bracket me-1"></i> Sign In to Order
+            </a>
+            <a href="{% url 'shop:register' %}" class="btn btn-outline-cc btn-sm px-4">
+              Create Account
+            </a>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Trust & Delivery Highlights -->
+      <div class="row g-3 pt-3 border-top">
+        <div class="col-sm-6">
+          <div class="d-flex align-items-center gap-2 text-muted small">
+            <div class="p-2 rounded-circle" style="background: var(--cc-green-light); color: var(--cc-green);">
+              <i class="fa-solid fa-truck-fast"></i>
+            </div>
+            <span><strong>Free Delivery</strong> on orders over ₹600 (₹80 fee under ₹600)</span>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="d-flex align-items-center gap-2 text-muted small">
+            <div class="p-2 rounded-circle" style="background: var(--cc-green-light); color: var(--cc-green);">
+              <i class="fa-solid fa-gift"></i>
+            </div>
+            <span><strong>Complimentary</strong> Gift Wrap & Note</span>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="d-flex align-items-center gap-2 text-muted small">
+            <div class="p-2 rounded-circle" style="background: var(--cc-green-light); color: var(--cc-green);">
+              <i class="fa-solid fa-shield-heart"></i>
+            </div>
+            <span><strong>Child-Safe 0+</strong> Embroidered Features</span>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="d-flex align-items-center gap-2 text-muted small">
+            <div class="p-2 rounded-circle" style="background: var(--cc-green-light); color: var(--cc-green);">
+              <i class="fa-solid fa-leaf"></i>
+            </div>
+            <span><strong>100% GOTS</strong> Pure Organic Fibers</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Reviews Section -->
+  <section class="my-5 pt-4 border-top">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h3 class="serif-heading mb-1">Customer Reviews & Ratings</h3>
+        <p class="text-muted small mb-0">Honest feedback from verified families who welcomed {{ product.name }} into their home.</p>
+      </div>
+    </div>
+
+    <!-- Review Form / Eligibility Banner -->
+    {% if user.is_authenticated and not user.is_admin_role %}
+      {% if user_has_purchased_and_delivered %}
+        <div class="card-cc p-4 mb-4 shadow-sm" style="border-radius: var(--cc-radius-lg); background: #ffffff;">
+          <h5 class="serif-heading mb-2">
+            {% if already_reviewed %}Edit Your Verified Review{% else %}Write a Verified Review{% endif %}
+          </h5>
+          <p class="small text-muted mb-3">As a verified recipient of a delivered order, your experience helps other families choose the perfect companion!</p>
+          
+          <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold text-muted">Star Rating (1-5)</label>
+                {{ review_form.rating }}
+              </div>
+              <div class="col-md-8">
+                <label class="form-label small fw-semibold text-muted">Your Thoughts</label>
+                {{ review_form.comment }}
+              </div>
+              <div class="col-12 text-end">
+                <button type="submit" class="btn btn-cc px-4 py-2">
+                  <i class="fa-solid fa-paper-plane me-1"></i> {% if already_reviewed %}Update Review{% else %}Submit Review{% endif %}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      {% else %}
+        <div class="alert alert-light border py-3 px-4 mb-4 d-flex align-items-center gap-3" style="border-radius: var(--cc-radius); background: #FAF7F2;">
+          <i class="fa-solid fa-shield-halved fa-2x text-muted"></i>
+          <div>
+            <strong class="d-block text-dark">Verified Purchase Policy</strong>
+            <span class="text-muted small">Only customers who have ordered and received this companion (Delivered status) can submit a review.</span>
+          </div>
+        </div>
+      {% endif %}
+    {% elif not user.is_authenticated %}
+      <div class="alert alert-light border py-3 px-4 mb-4" style="border-radius: var(--cc-radius); background: #FAF7F2;">
+        <i class="fa-solid fa-lock me-2 text-muted"></i>
+        <span>Please <a href="{% url 'shop:login' %}" class="fw-bold" style="color:var(--cc-green);">sign in</a> to write a review. Only verified buyers can submit reviews.</span>
+      </div>
+    {% endif %}
+
+    <!-- Reviews List -->
+    <div class="row g-4">
+      {% for r in reviews %}
+      <div class="col-md-6">
+        <div class="card-cc p-4 h-100 d-flex flex-column shadow-sm" style="border-radius: var(--cc-radius); background: #ffffff;">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="star-rating text-warning">
+              {% for i in "12345" %}
+                {% if forloop.counter <= r.rating %}<i class="fa-solid fa-star"></i>{% else %}<i class="fa-regular fa-star"></i>{% endif %}
+              {% endfor %}
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="text-muted small">{{ r.created_at|date:"M d, Y" }}</span>
+              {% if user == r.user %}
+                <form method="post" action="{% url 'shop:delete_review' r.pk %}" class="d-inline">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-link text-danger p-0 ms-2" title="Delete Review" data-confirm="Delete your review for {{ product.name }}?">
+                    <i class="fa-solid fa-trash-can small"></i>
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+          <p class="mb-3 text-dark fst-italic flex-grow-1" style="line-height: 1.65;">
+            "{{ r.comment|default:'Wonderful soft toy, my family loves it!' }}"
+          </p>
+          <div class="d-flex align-items-center gap-2 pt-2 border-top">
+            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-success" style="width: 36px; height: 36px; background: var(--cc-green-light); font-size: 0.85rem;">
+              {{ r.user.username|slice:":2"|upper }}
+            </div>
+            <div>
+              <h6 class="mb-0 small fw-bold text-dark">{{ r.user.first_name|default:r.user.username }}</h6>
+              <span class="text-success small" style="font-size: 0.75rem;"><i class="fa-solid fa-circle-check me-1"></i> Verified Buyer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center py-4">
+        <div class="card-cc p-4 bg-light border-0 text-center" style="border-radius: var(--cc-radius);">
+          <i class="fa-regular fa-comment-dots fa-2x mb-2 text-muted"></i>
+          <h6 class="serif-heading text-muted mb-1">No Reviews Yet</h6>
+          <p class="text-muted small mb-0">Be the first verified family to share thoughts on {{ product.name }}!</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Related Soft Toys -->
+  {% if related %}
+  <section class="my-5 pt-4 border-top">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <div>
+        <span class="badge-tag-warm mb-1">More Companions</span>
+        <h3 class="serif-heading mb-0">You May Also Love</h3>
+      </div>
+      <a href="{% url 'shop:product_list' %}?category={{ product.category.id }}" class="btn btn-outline-cc btn-sm">
+        View All in {{ product.category.name }} &rarr;
+      </a>
+    </div>
+
+    <div class="row g-4">
+      {% for p in related %}
+      <div class="col-6 col-md-3">
+        <div class="card-cc h-100 text-center d-flex flex-column product-card-hover shadow-sm" style="border-radius: var(--cc-radius);">
+          <a href="{% url 'shop:product_detail' p.pk %}" class="product-img-wrap d-block overflow-hidden" style="aspect-ratio: 1/1; background: var(--cc-sand); border-radius: var(--cc-radius) var(--cc-radius) 0 0;">
+            <img src="{{ p.get_image }}" alt="{{ p.name }}" class="w-100 h-100 object-fit-cover transition-transform" loading="lazy">
+          </a>
+          <div class="p-3 d-flex flex-column flex-grow-1">
+            <h6 class="fw-bold mb-1 text-truncate" title="{{ p.name }}" style="font-size: 0.95rem; color: var(--cc-green-dark);">
+              <a href="{% url 'shop:product_detail' p.pk %}" class="text-decoration-none text-inherit">{{ p.name }}</a>
+            </h6>
+            <p class="mb-3 fw-bold" style="color: var(--cc-gold-dark);">₹{{ p.price }}</p>
+            <a href="{% url 'shop:product_detail' p.pk %}" class="btn btn-outline-cc btn-sm w-100 mt-auto">View Details</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+
+<script>
+  function changeMainImage(url, btn) {
+    const mainImg = document.getElementById('mainProductImage');
+    if (mainImg) mainImg.src = url;
+    document.querySelectorAll('.gallery-thumb-btn').forEach(b => {
+      b.classList.remove('active', 'border-2', 'border-success');
+      b.classList.add('border');
+    });
+    btn.classList.add('active', 'border-2', 'border-success');
+    btn.classList.remove('border');
+  }
+
+  function incrementQty(maxQty) {
+    const input = document.getElementById('cartQuantity');
+    if (input) {
+      let val = parseInt(input.value) || 1;
+      if (val < maxQty) {
+        input.value = val + 1;
+      }
+    }
+  }
+
+  function decrementQty() {
+    const input = document.getElementById('cartQuantity');
+    if (input) {
+      let val = parseInt(input.value) || 1;
+      if (val > 1) {
+        input.value = val - 1;
+      }
+  }
+</script>
+{% endblock %}

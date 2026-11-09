@@ -1,0 +1,68 @@
+{% extends "shop/admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Payments & Transactions — CuddleCart Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+  <div>
+    <h2 class="serif-heading mb-1" style="font-size:1.8rem;">Payment Transactions</h2>
+    <p class="text-muted mb-0">Review all simulated and real payment records across all orders.</p>
+  </div>
+</div>
+
+<div class="card-cc p-4 shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-cc align-middle mb-0">
+      <thead>
+        <tr class="text-muted small text-uppercase">
+          <th>Payment ID</th>
+          <th>Order</th>
+          <th>Customer</th>
+          <th>Amount</th>
+          <th>Method</th>
+          <th>Status</th>
+          <th>Transaction ID</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pay in payments %}
+        <tr>
+          <td><strong class="font-monospace text-dark">#PAY-{{ pay.id }}</strong></td>
+          <td>
+            <a href="{% url 'shop:admin_order_detail' pay.order.id %}" class="fw-semibold" style="color: var(--cc-green-dark);">
+              Order #{{ pay.order.id }}
+            </a>
+          </td>
+          <td>{{ pay.order.user.username }}</td>
+          <td class="fw-bold fs-6" style="color: var(--cc-gold-dark);">₹{{ pay.amount }}</td>
+          <td>
+            <span class="badge bg-light text-dark border text-uppercase">{{ pay.get_payment_method_display }}</span>
+          </td>
+          <td>
+            {% if pay.status == 'success' %}
+              <span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i> Success</span>
+            {% elif pay.status == 'refunded' %}
+              <span class="badge bg-secondary">Refunded</span>
+            {% elif pay.status == 'failed' %}
+              <span class="badge bg-danger"><i class="fa-solid fa-circle-xmark me-1"></i> Failed</span>
+            {% else %}
+              <span class="badge bg-warning text-dark">Pending</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="font-monospace small text-muted">{{ pay.transaction_id|default:"N/A" }}</span>
+          </td>
+          <td class="small text-muted">{{ pay.payment_date|date:"M d, Y, h:i A" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center py-4 text-muted">No payment records found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

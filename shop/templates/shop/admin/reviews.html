@@ -1,0 +1,61 @@
+{% extends "shop/admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Reviews Moderation — CuddleCart Admin{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+  <h2 class="serif-heading mb-1" style="font-size:1.8rem;">Reviews & Feedback</h2>
+  <p class="text-muted mb-0">Customer ratings and heartfelt testimonials across your catalog.</p>
+</div>
+
+<div class="card-cc p-4">
+  <div class="table-responsive">
+    <table class="table table-cc align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Customer</th>
+          <th>Rating</th>
+          <th>Comment</th>
+          <th>Date</th>
+          <th class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in reviews %}
+        <tr>
+          <td>
+            <span class="fw-bold" style="color:var(--cc-green-dark);">{{ r.product.name }}</span>
+          </td>
+          <td>{{ r.user.username }}</td>
+          <td>
+            <div class="star-rating">
+              {% for i in "12345" %}
+                {% if forloop.counter <= r.rating %}<i class="fa-solid fa-star"></i>{% else %}<i class="fa-regular fa-star"></i>{% endif %}
+              {% endfor %}
+            </div>
+          </td>
+          <td>
+            <span class="small text-muted">"{{ r.comment|truncatewords:20 }}"</span>
+          </td>
+          <td class="small">{{ r.created_at|date:"M d, Y" }}</td>
+          <td class="text-end">
+            <form method="post" action="{% url 'shop:admin_review_delete' r.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-cc text-danger" title="Delete Review" data-confirm="Delete this customer review?">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center py-4 text-muted">No product reviews yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

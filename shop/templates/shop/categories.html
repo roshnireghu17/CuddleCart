@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Soft Toy Categories — CuddleCart &middot; All Companions{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <!-- Header Banner -->
+  <div class="text-center mb-5">
+    <span class="badge-tag-warm mb-2 d-inline-block px-3 py-1">
+      <i class="fa-solid fa-shapes me-1"></i> Our Curated Toy Sanctuary
+    </span>
+    <h1 class="serif-heading mb-3" style="font-size: 2.6rem; color: var(--cc-green-dark);">
+      Soft Toy Categories
+    </h1>
+    <p class="text-muted lead mx-auto" style="max-width: 650px;">
+      Discover all the types of lovingly handcrafted cuddle companions you can adopt at CuddleCart. Every collection is tailored for safety, warmth, and joy.
+    </p>
+  </div>
+
+  <!-- Detailed Categories Showcase Grid -->
+  <div class="row g-4 mb-5">
+    <!-- Category 1: Teddy Bears -->
+    <div class="col-lg-6">
+      <div class="card-cc p-4 h-100 shadow-sm d-flex flex-column justify-content-between" style="border-radius: var(--cc-radius-lg); background: #ffffff; border: 1px solid var(--cc-border);">
+        <div>
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background: var(--cc-cream-light); color: var(--cc-gold-dark); font-size: 1.6rem; flex-shrink: 0;">
+              <i class="fa-solid fa-paw"></i>
+            </div>
+            <div>
+              <span class="badge bg-light text-muted border small mb-1">Heritage Collection</span>
+              <h3 class="serif-heading mb-0" style="color: var(--cc-green-dark); font-size: 1.6rem;">Teddy Bears</h3>
+            </div>
+          </div>
+          <p class="text-muted" style="line-height: 1.7;">
+            The quintessential childhood friend. Our heritage teddy bears are hand-crafted from downy organic fleece, stuffed with resilient hypoallergenic batting, and detailed with hand-embroidered velvet muzzles. Designed to sit beside little dreamers for years to come.
+          </p>
+          <div class="p-3 bg-light rounded-3 mb-3 border">
+            <span class="fw-semibold small text-dark d-block mb-1">Featured Companions in this category:</span>
+            <ul class="list-unstyled mb-0 small text-muted">
+              <li><i class="fa-solid fa-check text-success me-2"></i><strong>Barnaby Bear Heritage</strong> (Medium, Large & Extra Large)</li>
+              <li><i class="fa-solid fa-check text-success me-2"></i><strong>Theodore Classic Teddy</strong> (Ribbon collar & cozy honey fur)</li>
+              <li><i class="fa-solid fa-check text-success me-2"></i><strong>Cozy Honey Bear Plush</strong> (Corduroy paw pads)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+          <span class="small fw-semibold text-muted">Starting from ₹499</span>
+          <a href="{% url 'shop:product_list' %}?q=Bear" class="btn btn-cc btn-sm px-3">
+            Browse Teddy Bears &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category 2: Plushies -->
+    <div class="col-lg-6">
+      <div class="card-cc p-4 h-100 shadow-sm d-flex flex-column justify-content-between" style="border-radius: var(--cc-radius-lg); background: #ffffff; border: 1px solid var(--cc-border);">
+        <div>
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background: #FFEBEA; color: #DC3545; font-size: 1.6rem; flex-shrink: 0;">
+              <i class="fa-solid fa-heart"></i>
+            </div>
+            <div>
+              <span class="badge bg-light text-muted border small mb-1">Woodland & Fantasy</span>
+              <h3 class="serif-heading mb-0" style="color: var(--cc-green-dark); font-size: 1.6rem;">Plush Pals & Friends</h3>
+            </div>
+          </div>
+          <p class="text-muted" style="line-height: 1.7;">
+            Whimsical woodland creatures and magical fairytale friends. Featuring soft floppy-eared bunnies, gentle penguins, sly cuddle foxes, and enchanting unicorns that spark endless bedtime storytelling.
+          </p>
+          <div class="p-3 bg-light rounded-3 mb-3 border">
+            <span class="fw-semibold small text-dark d-block mb-1">Featured Companions in this category:</span>
+            <ul class="list-unstyled mb-0 small text-muted">
+              <li><i class="fa-solid fa-check text-success me-2"></i><strong>Luna Bunny Plush</strong> (Extra-long floppy ears)</li>
+              <li><i class="fa-solid fa-check text-success me-2"></i><strong>Finnegan Fox & Pip Penguin</strong> (Rich velvety textures)</li>
+              <li><i class="fa-solid fa-check text-success me-2"></i><strong>Milo The Koala & Magical Unicorn</strong> (Storybook pals)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+          <span class="small fw-semibold text-muted">Starting from ₹449</span>
+          <a href="{% url 'shop:product_list' %}?category=2" class="btn btn-cc btn-sm px-3">
+            Browse Plushies &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category 3: Baby Soft Toys -->
+    <div class="col-lg-6">
+      <div class="card-cc p-4 h-100 shadow-sm d-flex flex-column justify-content-between" style="border-radius: var(--cc-radius-lg); background: #ffffff; border: 1px solid var(--cc-border);">
+        <div>
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background: var(--cc-green-light); color: var(--cc-green); font-size: 1.6rem; flex-shrink: 0;">
+              <i class="fa-solid fa-baby"></i>
+            </div>
+            <div>
+              <span class="badge bg-light text-muted border small mb-1">Certified Safe 0+ Months</span>
+              <h3 class="serif-heading mb-0" style="color: var(--cc-green-dark); font-size: 1.6rem;">Baby Soft Toys</h3>
+            </div>
+          </div>
+          <p class="text-muted" style="line-height: 1.7;">
+            Gentle, tactile first toys specially created for newborns and infants. Scaled for tiny fingers to grasp, machine washable, and crafted exclusively with 100% GOTS organic cotton yarns without small or rigid components.
+          </p>
+          <div class="p-3 bg-light rounded-3 mb-3 border">
+            <span class="fw-semibold small text-dark d-block mb-1">Featured Companions in this category:</span>
+            <ul class="list-unstyled mb-0 small text-muted">
+              <li><i class="fa-solid fa-check text-success me-2"></i><strong>Ramsey Baby Bear</strong> (Palm-sized newborn hugger)</li>
+              <li><i class="fa-solid fa-check text-success me-2"></i><strong>Snuggle Elephant First Friend</strong> (Comforting satin ears)</li>
+              <li><i class="fa-solid fa-check text-success me-2"></i><strong>Heart Pillow Cushion & Daisy Lamb</strong> (Bedtime lullabies)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+          <span class="small fw-semibold text-muted">Starting from ₹429</span>
+          <a href="{% url 'shop:product_list' %}?q=Baby" class="btn btn-cc btn-sm px-3">
+            Browse Baby Toys &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category 4: Luxury Gift Sets -->
+    <div class="col-lg-6">
+      <div class="card-cc p-4 h-100 shadow-sm d-flex flex-column justify-content-between" style="border-radius: var(--cc-radius-lg); background: #ffffff; border: 1px solid var(--cc-border);">
+        <div>
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background: #E8F4EC; color: #198754; font-size: 1.6rem; flex-shrink: 0;">
+              <i class="fa-solid fa-gift"></i>
+            </div>
+            <div>
+              <span class="badge bg-light text-muted border small mb-1">Celebrations & Milestones</span>
+              <h3 class="serif-heading mb-0" style="color: var(--cc-green-dark); font-size: 1.6rem;">Luxury Gift Sets</h3>
+            </div>
+          </div>
+          <p class="text-muted" style="line-height: 1.7;">
+            Bespoke celebration bundles designed for baby showers, first birthdays, and milestone moments. Each gift set arrives in an embossed keepsake memory trunk with a handwritten greeting card and golden seal.
+          </p>
+          <div class="p-3 bg-light rounded-3 mb-3 border">
+            <span class="fw-semibold small text-dark d-block mb-1">Featured Companions in this category:</span>
+            <ul class="list-unstyled mb-0 small text-muted">
+              <li><i class="fa-solid fa-check text-success me-2"></i><strong>Newborn Welcome Gift Hamper</strong> (Blanket + plushie + rattle)</li>
+              <li><i class="fa-solid fa-check text-success me-2"></i><strong>Birthday Celebration Gift Box</strong> (Barnaby + milestone pouch)</li>
+              <li><i class="fa-solid fa-check text-success me-2"></i><strong>Woodland Trio Luxury Trunk</strong> (Collector heirloom box)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+          <span class="small fw-semibold text-muted">Free Delivery Included</span>
+          <a href="{% url 'shop:product_list' %}?q=Gift" class="btn btn-cc btn-sm px-3">
+            Browse Gift Sets &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Club Banner -->
+  <div class="p-4 p-md-5 rounded-4 shadow-sm text-center text-md-start" style="background: linear-gradient(135deg, #173A32 0%, #214E43 100%); color: white;">
+    <div class="row align-items-center g-4">
+      <div class="col-md-8">
+        <span class="badge-tag-gold mb-2 d-inline-block px-3 py-1">
+          <i class="fa-solid fa-crown me-1"></i> CuddleCart Club Perks
+        </span>
+        <h3 class="serif-heading text-white mb-2" style="font-size: 1.8rem;">
+          Get 10% Off Any Companion with Coupon "CLUB10"
+        </h3>
+        <p class="text-white-50 mb-0">
+          Members of our CuddleCart Club enjoy a 10% discount on every order, complimentary satin ribbon gift wrapping, and free carbon-neutral shipping on orders above ₹600.
+        </p>
+      </div>
+      <div class="col-md-4 text-center text-md-end">
+        <a href="{% url 'shop:product_list' %}" class="btn btn-light px-4 py-3 fw-bold" style="color: var(--cc-green-dark); border-radius: 50px;">
+          <i class="fa-solid fa-bag-shopping me-1"></i> Start Shopping
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

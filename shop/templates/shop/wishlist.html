@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Cherished Wishlist — CuddleCart{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Breadcrumb & Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1 small">
+          <li class="breadcrumb-item"><a href="{% url 'shop:home' %}" class="text-decoration-none" style="color:var(--cc-green);"><i class="fa-solid fa-house-chimney me-1"></i> Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">My Wishlist</li>
+        </ol>
+      </nav>
+      <h1 class="serif-heading mb-1" style="font-size: 2rem;">My Saved Companions</h1>
+      <p class="text-muted small mb-0">Soft toys and plushies you have saved for birthdays, milestones, and special hugs.</p>
+    </div>
+    {% if items %}
+      <div class="mt-2 mt-sm-0">
+        <span class="badge px-3 py-2 rounded-pill font-monospace" style="background: var(--cc-cream-light); color: var(--cc-green-dark); border: 1px solid var(--cc-border);">
+          <i class="fa-solid fa-heart text-danger me-1"></i> {{ items|length }} companion{{ items|length|pluralize }} saved
+        </span>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if items %}
+  <div class="row g-4 mb-5">
+    {% for item in items %}
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="card-cc h-100 d-flex flex-column text-center position-relative product-card-hover shadow-sm" style="border-radius: var(--cc-radius); background: #ffffff;">
+        <!-- Remove button in top corner -->
+        <a href="{% url 'shop:remove_wishlist_item' item.id %}" class="position-absolute text-danger" style="top: 10px; right: 10px; z-index: 5;" title="Remove from Wishlist" data-confirm="Remove {{ item.product.name }} from your wishlist?">
+          <span class="badge bg-white shadow-sm p-2 text-danger rounded-circle border">
+            <i class="fa-solid fa-xmark"></i>
+          </span>
+        </a>
+
+        <!-- Product Image -->
+        <a href="{% url 'shop:product_detail' item.product.pk %}" class="product-img-wrap d-block overflow-hidden position-relative" style="aspect-ratio: 1/1; background: var(--cc-sand); border-radius: var(--cc-radius) var(--cc-radius) 0 0;">
+          {% if item.product.get_image %}
+            <img src="{{ item.product.get_image }}" alt="{{ item.product.name }}" class="w-100 h-100 object-fit-cover transition-transform" loading="lazy">
+          {% else %}
+            <img src="{% static 'shop/img/barnaby_bear.jpg' %}" alt="{{ item.product.name }}" class="w-100 h-100 object-fit-cover transition-transform" loading="lazy">
+          {% endif %}
+          
+          <div class="position-absolute top-0 start-0 m-2">
+            {% if item.product.stock_quantity <= 0 %}
+              <span class="stock-badge stock-badge-out shadow-sm">Sold Out</span>
+            {% elif item.product.stock_quantity <= 5 %}
+              <span class="stock-badge stock-badge-low shadow-sm">Only {{ item.product.stock_quantity }} Left</span>
+            {% else %}
+              <span class="stock-badge stock-badge-in shadow-sm">In Stock</span>
+            {% endif %}
+          </div>
+        </a>
+
+        <!-- Content -->
+        <div class="p-3 d-flex flex-column flex-grow-1">
+          <div class="d-flex justify-content-center gap-1 mb-1">
+            <span class="badge bg-light text-muted border" style="font-size: 0.72rem;">
+              {{ item.product.category.name|default:"Plush" }}
+            </span>
+            {% if item.product.size %}
+              <span class="badge bg-light text-muted border" style="font-size: 0.72rem;">
+                {{ item.product.size }}
+              </span>
+            {% endif %}
+          </div>
+
+          <h6 class="fw-bold mb-1 text-truncate" title="{{ item.product.name }}" style="font-size: 1.02rem; color: var(--cc-green-dark);">
+            <a href="{% url 'shop:product_detail' item.product.pk %}" class="text-decoration-none text-inherit">
+              {{ item.product.name }}
+            </a>
+          </h6>
+          <p class="mb-3 fw-bold fs-5" style="color: var(--cc-gold-dark);">₹{{ item.product.price }}</p>
+
+          <div class="mt-auto d-grid gap-2">
+            {% if item.product.stock_quantity > 0 %}
+              <form method="post" action="{% url 'shop:move_wishlist_to_cart' item.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-cc btn-sm w-100">
+                  <i class="fa-solid fa-bag-shopping me-1"></i> Move to Bag
+                </button>
+              </form>
+            {% else %}
+              <button class="btn btn-secondary btn-sm w-100" disabled>
+                <i class="fa-solid fa-ban me-1"></i> Out of Stock
+              </button>
+            {% endif %}
+
+            <a href="{% url 'shop:product_detail' item.product.pk %}" class="btn btn-outline-cc btn-sm w-100">
+              <i class="fa-solid fa-eye me-1"></i> View Details
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card-cc p-5 text-center my-4 shadow-sm" style="border-radius: var(--cc-radius-lg); background: #ffffff;">
+    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px; background: var(--cc-cream-light); color: var(--cc-green);">
+      <i class="fa-regular fa-heart fa-2x"></i>
+    </div>
+    <h3 class="serif-heading mb-2">Your Wishlist is Empty</h3>
+    <p class="text-muted mb-4" style="max-width: 480px; margin: 0 auto;">
+      Click the heart icon on any toy in our shop to save your favorite soft companions for upcoming celebrations!
+    </p>
+    <div>
+      <a href="{% url 'shop:product_list' %}" class="btn btn-cc px-4 py-2">
+        <i class="fa-solid fa-magnifying-glass me-2"></i> Explore Soft Toys
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

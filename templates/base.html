@@ -1,0 +1,1247 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}CuddleCart — Cherished Friends, Forever Loved{% endblock %}</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧸</text></svg>">
+
+  <!-- Google Fonts: Playfair Display & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Bootstrap 5 & FontAwesome 6 -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  
+  <!-- CuddleCart Custom Styles -->
+  <link href="{% static 'shop/css/style.css' %}" rel="stylesheet">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-cc">
+  <div class="container">
+    <!-- Brand Logo -->
+    <a class="brand" href="{% url 'shop:home' %}" aria-label="CuddleCart Home">
+      <i class="fa-solid fa-heart brand-icon"></i>
+      <span class="brand-text">CuddleCart</span>
+    </a>
+
+    <!-- Mobile Action Icons (Wishlist, Cart, Toggler) -->
+    <div class="d-flex align-items-center gap-2 d-lg-none ms-auto me-2">
+      {% if user.is_authenticated %}
+        <a href="{% url 'shop:wishlist_view' %}" class="icon-link" title="Wishlist" aria-label="Wishlist">
+          <i class="fa-regular fa-heart"></i>
+          {% if nav_wishlist_count %}
+            <span class="badge-cc wishlist-count-badge">{{ nav_wishlist_count }}</span>
+          {% endif %}
+        </a>
+        <button type="button" class="icon-link position-relative border-0" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" title="Your Cuddle Bag" aria-label="Open Shopping Bag">
+          <i class="fa-solid fa-bag-shopping"></i>
+          {% if nav_cart_count %}
+            <span class="badge-cc cart-count-badge">{{ nav_cart_count }}</span>
+          {% endif %}
+        </button>
+      {% endif %}
+      <button class="navbar-toggler border-0 shadow-none p-1" type="button" data-bs-toggle="collapse" data-bs-target="#cuddleNavbar" aria-controls="cuddleNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fa-solid fa-bars fs-5" style="color:var(--cc-green-dark)"></i>
+      </button>
+    </div>
+
+    <!-- Collapsible Menu -->
+    <div class="collapse navbar-collapse" id="cuddleNavbar">
+      <!-- Mobile Search Form (visible only on mobile/tablet) -->
+      <form action="{% url 'shop:product_list' %}" method="get" class="d-lg-none my-3 header-search-form w-100" role="search">
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-control header-search-input" placeholder="Search soft toys, plushies..." aria-label="Search soft toys">
+        <button type="submit" class="header-search-btn" aria-label="Search button">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </form>
+
+      <!-- Main Navigation -->
+      <ul class="navbar-nav mx-auto mb-2 mb-lg-0 align-items-lg-center">
+        <li class="nav-item">
+          <a class="nav-link {% if request.path == '/products/' and not request.GET.q and not request.GET.category %}active{% endif %}" href="{% url 'shop:product_list' %}">Browse All</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if '/categories/' in request.path %}active{% endif %}" href="{% url 'shop:categories_overview' %}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Categories
+          </a>
+          <ul class="dropdown-menu shadow-lg border-0 cc-dropdown-menu">
+            <li>
+              <a class="dropdown-item py-2 fw-semibold" href="{% url 'shop:categories_overview' %}" style="color: var(--cc-green-dark);">
+                <i class="fa-solid fa-shapes me-2 text-warning"></i> View All Categories
+              </a>
+            </li>
+            <li><hr class="dropdown-divider my-1"></li>
+            <li>
+              <a class="dropdown-item py-2" href="{% url 'shop:product_list' %}?q=Bear">
+                <i class="fa-solid fa-paw me-2 text-muted"></i> Teddy Bears
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item py-2" href="{% url 'shop:product_list' %}?category=2">
+                <i class="fa-solid fa-heart me-2 text-muted"></i> Plushies & Pals
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item py-2" href="{% url 'shop:product_list' %}?q=Baby">
+                <i class="fa-solid fa-baby me-2 text-muted"></i> Baby Soft Toys (0+)
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item py-2" href="{% url 'shop:product_list' %}?q=Gift">
+                <i class="fa-solid fa-gift me-2 text-muted"></i> Luxury Gift Sets
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if '/about/' in request.path %}active{% endif %}" href="{% url 'shop:about' %}">About Us</a>
+        </li>
+      </ul>
+
+      <!-- Desktop Header Search Form -->
+      <form action="{% url 'shop:product_list' %}" method="get" class="d-none d-lg-flex header-search-form me-2" role="search">
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="form-control header-search-input" placeholder="Search companions..." aria-label="Search companions">
+        <button type="submit" class="header-search-btn" aria-label="Search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </form>
+
+      <!-- User Actions & Authentication Controls -->
+      <div class="d-flex align-items-center gap-2 nav-actions mt-3 mt-lg-0">
+
+        {% if user.is_authenticated %}
+          <!-- Authenticated State -->
+          {% if user.is_admin_role %}
+            <a href="{% url 'shop:admin_overview' %}" class="btn btn-sm btn-cc" title="Go to Admin Portal">
+              <i class="fa-solid fa-gauge me-1"></i> Admin Portal
+            </a>
+          {% endif %}
+
+          <!-- Wishlist Icon (Desktop) -->
+          <a href="{% url 'shop:wishlist_view' %}" class="icon-link d-none d-lg-inline-flex" title="Wishlist" aria-label="Wishlist">
+            <i class="fa-regular fa-heart"></i>
+            <span class="badge-cc wishlist-count-badge {% if not nav_wishlist_count %}d-none{% endif %}">
+              {{ nav_wishlist_count|default:"0" }}
+            </span>
+          </a>
+
+          <!-- Cart Drawer Trigger (Desktop) -->
+          <button type="button" class="icon-link position-relative border-0 d-none d-lg-inline-flex" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" title="Your Cuddle Bag" aria-label="Open Cuddle Bag">
+            <i class="fa-solid fa-bag-shopping"></i>
+            <span class="badge-cc cart-count-badge {% if not nav_cart_count %}d-none{% endif %}">
+              {{ nav_cart_count|default:"0" }}
+            </span>
+          </button>
+
+          <!-- User Account Dropdown -->
+          <div class="dropdown d-inline-block">
+            <button class="icon-link border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="My Account" aria-label="User Account">
+              <i class="fa-regular fa-circle-user"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 cc-dropdown-menu">
+              <li class="px-3 py-2 border-bottom">
+                <span class="d-block small text-muted">Signed in as</span>
+                <strong class="text-truncate d-block" style="color:var(--cc-green-dark); font-size: 0.95rem;">
+                  {{ user.first_name|default:user.username }}
+                </strong>
+              </li>
+              <li>
+                <a class="dropdown-item py-2" href="{% url 'shop:user_dashboard' %}">
+                  <i class="fa-solid fa-house-user me-2 text-muted"></i> My Dashboard
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item py-2" href="{% url 'shop:order_history' %}">
+                  <i class="fa-solid fa-box-open me-2 text-muted"></i> My Orders
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item py-2" href="{% url 'shop:wishlist_view' %}">
+                  <i class="fa-regular fa-heart me-2 text-muted"></i> Wishlist
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item py-2" href="{% url 'shop:profile' %}">
+                  <i class="fa-solid fa-gear me-2 text-muted"></i> Profile & Addresses
+                </a>
+              </li>
+              {% if user.is_admin_role %}
+                <li><hr class="dropdown-divider my-1"></li>
+                <li>
+                  <a class="dropdown-item py-2 text-success fw-bold" href="{% url 'shop:admin_overview' %}">
+                    <i class="fa-solid fa-gauge me-2"></i> Admin Portal
+                  </a>
+                </li>
+              {% endif %}
+              <li><hr class="dropdown-divider my-1"></li>
+              <li>
+                <a class="dropdown-item py-2 text-danger" href="{% url 'shop:logout' %}">
+                  <i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Sign Out
+                </a>
+              </li>
+            </ul>
+          </div>
+        {% else %}
+          <!-- Logged Out State: Only Sign In & Register Buttons in Navigation -->
+          <a href="{% url 'shop:login' %}" class="btn btn-sm btn-outline-cc">
+            Sign In
+          </a>
+          <a href="{% url 'shop:register' %}" class="btn btn-sm btn-cc">
+            Register
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+{% endblock navbar %}
+
+<main class="{% block main_class %}flex-grow-1{% endblock %}">
+  {% if messages %}
+    <div class="container mt-3">
+      <div class="row justify-content-center">
+        <div class="col-12">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm position-relative overflow-hidden mb-3" role="alert" style="border-radius:var(--cc-radius);">
+              <i class="fa-solid fa-circle-info me-2"></i> {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              <div class="alert-timer-bar"></div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% block content %}{% endblock %}
+</main>
+
+{% block footer %}
+<footer class="footer-cc">
+  <div class="container">
+    <div class="row g-4 justify-content-between">
+      <!-- Col 1: Brand & Bio matching reference -->
+      <div class="col-lg-4 col-md-6">
+        <div class="brand">CuddleCart</div>
+        <p class="small text-muted mb-3" style="max-width: 320px; line-height: 1.6;">
+          &copy; {% now "Y" %} CuddleCart. All toys made with love and organic cotton. Handcrafted soft companions designed to bring comfort and joy to your little ones.
+        </p>
+        <div class="d-flex gap-3 social-links">
+          <a href="#" class="social-icon" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="social-icon" title="Facebook"><i class="fa-brands fa-facebook"></i></a>
+          <a href="#" class="social-icon" title="Pinterest"><i class="fa-brands fa-pinterest"></i></a>
+          <a href="#" class="social-icon" title="Share CuddleCart" onclick="if(navigator.share){navigator.share({title:'CuddleCart',url:window.location.href});}else{alert('Link copied to clipboard!');}"><i class="fa-solid fa-share-nodes"></i></a>
+        </div>
+      </div>
+
+      <!-- Col 2: Shop Links -->
+      <div class="col-lg-2 col-6">
+        <h6>Shop</h6>
+        <ul>
+          <li><a href="{% url 'shop:product_list' %}?q=Bear">Teddy Bears</a></li>
+          <li><a href="{% url 'shop:product_list' %}?q=Bunny">Plushies</a></li>
+          <li><a href="{% url 'shop:product_list' %}?q=Baby">Baby Soft Toys</a></li>
+          <li><a href="{% url 'shop:product_list' %}?q=Gift">Gift Sets</a></li>
+          <li><a href="{% url 'shop:product_list' %}">All Companions</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 3: Information Links -->
+      <div class="col-lg-2 col-6">
+        <h6>Information</h6>
+        <ul>
+          <li><a href="#about-section">About Us</a></li>
+          <li><a href="#contact-modal" data-bs-toggle="modal" data-bs-target="#contactModal">Contact</a></li>
+          <li><a href="#shipping-modal" data-bs-toggle="modal" data-bs-target="#shippingModal">Shipping & Returns</a></li>
+          <li><a href="#privacy-modal" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a></li>
+          <li><a href="#sustainability-modal" data-bs-toggle="modal" data-bs-target="#sustainabilityModal">Sustainability</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 4: Cuddle Club Newsletter matching reference -->
+      <div class="col-lg-4 col-md-6">
+        <div class="cuddle-club-subscribe-box">
+          <h6 class="cuddle-club-title">Cuddle Club</h6>
+          <p class="small text-muted mb-3">Join our newsletter for exclusive treats and early access to new cuddly friends.</p>
+          <form id="newsletterForm" onsubmit="handleNewsletter(event)">
+            <div class="mb-2">
+              <input type="email" id="newsletterEmail" placeholder="Your email address" required class="form-control newsletter-input">
+            </div>
+            <button type="submit" class="btn btn-subscribe w-100">Subscribe</button>
+          </form>
+          <div id="newsletterSuccess" class="alert alert-success mt-2 py-2 px-3 small d-none">
+            <i class="fa-solid fa-heart me-1 text-danger"></i> Thank you for subscribing to Cuddle Club updates!
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="footer-bottom-bar d-flex flex-wrap justify-content-between align-items-center">
+      <p class="mb-0">&copy; {% now "Y" %} CuddleCart. All rights reserved. Made with love for little ones.</p>
+      <p class="mb-0 text-muted fst-italic">Cherished Friends, Forever Loved.</p>
+    </div>
+  </div>
+</footer>
+{% endblock footer %}
+
+<!-- =========================================================================
+     1. Interactive Auth Modal (Sign In / Register Drawer)
+     ========================================================================= -->
+<div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:440px;">
+    <div class="modal-content auth-modal-content shadow-lg">
+      <div class="modal-header border-0 pb-0 justify-content-end">
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <div class="modal-body px-4 pt-0 pb-4">
+        <!-- Boutique Emblem Badge -->
+        <div class="auth-emblem">
+          <i class="fa-solid fa-heart"></i>
+        </div>
+
+        <!-- Tab Switcher -->
+        <div class="auth-tabs mb-4">
+          <button type="button" class="auth-tab-btn active" id="tabLoginBtn" onclick="switchAuthTab('login')">Sign In</button>
+          <button type="button" class="auth-tab-btn" id="tabRegisterBtn" onclick="switchAuthTab('register')">Create Account</button>
+        </div>
+
+        <!-- Sign In Form Panel -->
+        <div id="authLoginPanel">
+          <div class="text-center mb-3">
+            <h4 class="serif-heading mb-1">Welcome Back</h4>
+            <p class="small text-muted mb-0">Sign in to view your cuddle bag and rewards.</p>
+          </div>
+
+          <!-- Client-side Alert inside Modal -->
+          <div id="modalLoginAlert" class="alert alert-danger py-2 px-3 small mb-3 text-start d-none" role="alert">
+            <div id="modalLoginAlertMsg"></div>
+          </div>
+
+          <form method="post" action="{% url 'shop:login' %}" autocomplete="off" onsubmit="return validateModalLoginForm(event)">
+            {% csrf_token %}
+            <div class="form-group-icon mb-3">
+              <label for="modal_username">Email or Username</label>
+              <i class="fa-regular fa-envelope input-icon"></i>
+              <input type="text" name="username" id="modal_username" class="form-control" placeholder="Enter your email or username" required autocomplete="off">
+            </div>
+
+            <div class="form-group-icon mb-3 position-relative">
+              <label for="modal_password">Password</label>
+              <i class="fa-solid fa-lock input-icon"></i>
+              <input type="password" name="password" id="modal_password" class="form-control pe-5" placeholder="Enter your password" required autocomplete="new-password">
+              <button type="button" class="pwd-toggle-btn position-absolute end-0 top-50 translate-middle-y me-2 border-0 bg-transparent text-muted" onclick="togglePasswordVisibility('modal_password', this)" title="Show/Hide password">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3 small">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="modalRemember" checked>
+                <label class="form-check-label text-muted" for="modalRemember">Remember me</label>
+              </div>
+              <a href="{% url 'shop:password_reset' %}" class="text-muted">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="btn btn-cc w-100 py-2 mb-3">
+              Sign In to CuddleCart
+            </button>
+          </form>
+        </div>
+
+        <!-- Create Account Form Panel -->
+        <div id="authRegisterPanel" class="d-none">
+          <div class="text-center mb-3">
+            <h4 class="serif-heading mb-1">Join the Family</h4>
+            <p class="small text-muted mb-0">Create an account for sweet perks and easy checkout.</p>
+          </div>
+
+          <!-- Client-side Alert inside Modal -->
+          <div id="modalRegisterAlert" class="alert alert-danger py-2 px-3 small mb-3 text-start d-none" role="alert">
+            <div id="modalRegisterAlertMsg"></div>
+          </div>
+
+          <form method="post" action="{% url 'shop:register' %}" autocomplete="off" onsubmit="return validateModalRegisterForm(event)">
+            {% csrf_token %}
+            <div class="form-group-icon mb-2">
+              <label for="reg_username">Full Name</label>
+              <i class="fa-regular fa-user input-icon"></i>
+              <input type="text" name="username" id="reg_username" class="form-control" placeholder="Enter your full name" required autocomplete="off">
+            </div>
+
+            <div class="form-group-icon mb-2">
+              <label for="reg_email">Email Address</label>
+              <i class="fa-regular fa-envelope input-icon"></i>
+              <input type="email" name="email" id="reg_email" class="form-control" placeholder="Enter your email address" required autocomplete="off">
+            </div>
+
+            <div class="form-group-icon mb-2 position-relative">
+              <label for="reg_password1">Password</label>
+              <i class="fa-solid fa-lock input-icon"></i>
+              <input type="password" name="password1" id="reg_password1" class="form-control pe-5" placeholder="Min 8 chars, 1 uppercase, 1 number & 1 symbol" required autocomplete="new-password" oninput="checkModalPasswordStrength()">
+              <button type="button" class="pwd-toggle-btn position-absolute end-0 top-50 translate-middle-y me-2 border-0 bg-transparent text-muted" onclick="togglePasswordVisibility('reg_password1', this)" title="Show/Hide password">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+
+            <!-- Live Password Criteria Checklist -->
+            <div class="p-2 mb-2 bg-light rounded text-start" style="font-size: 0.75rem; border: 1px solid rgba(0,0,0,0.06);">
+              <div class="text-muted fw-bold mb-1">Requirements:</div>
+              <div class="d-flex flex-wrap gap-1">
+                <span id="mCritLength" class="badge bg-secondary-subtle text-muted"><i class="fa-solid fa-circle-xmark me-1"></i>8+ chars</span>
+                <span id="mCritUpper" class="badge bg-secondary-subtle text-muted"><i class="fa-solid fa-circle-xmark me-1"></i>1 Uppercase</span>
+                <span id="mCritNumber" class="badge bg-secondary-subtle text-muted"><i class="fa-solid fa-circle-xmark me-1"></i>1 Number</span>
+                <span id="mCritSpecial" class="badge bg-secondary-subtle text-muted"><i class="fa-solid fa-circle-xmark me-1"></i>1 Symbol</span>
+              </div>
+            </div>
+
+            <div class="form-group-icon mb-3 position-relative">
+              <label for="reg_password2">Confirm Password</label>
+              <i class="fa-solid fa-shield-halved input-icon"></i>
+              <input type="password" name="password2" id="reg_password2" class="form-control pe-5" placeholder="Re-enter password to confirm" required autocomplete="new-password" oninput="checkModalPasswordMatch()">
+              <button type="button" class="pwd-toggle-btn position-absolute end-0 top-50 translate-middle-y me-2 border-0 bg-transparent text-muted" onclick="togglePasswordVisibility('reg_password2', this)" title="Show/Hide password">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+              <div id="mPasswordMatchMsg" class="form-text small mt-1"></div>
+            </div>
+
+            <button type="submit" class="btn btn-cc w-100 py-2 mb-3">
+              <span>Create Account</span>
+              <i class="fa-solid fa-arrow-right ms-2"></i>
+            </button>
+          </form>
+        </div>
+
+        <div class="text-center small text-muted border-top pt-3">
+          <i class="fa-solid fa-shield-heart text-success me-1"></i> 100% Secure • Organic & Child-Safe Promise
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     2. Slide-Over Live Cart Drawer (#cartDrawer)
+     ========================================================================= -->
+<div class="offcanvas offcanvas-end cc-cart-offcanvas" tabindex="-1" id="cartDrawer" aria-labelledby="cartDrawerLabel">
+  <div class="offcanvas-header border-bottom py-3">
+    <div class="d-flex align-items-center gap-2">
+      <i class="fa-solid fa-bag-shopping text-success fs-5"></i>
+      <h5 class="offcanvas-title serif-heading mb-0" id="cartDrawerLabel">Your Cuddle Bag</h5>
+      <span class="badge rounded-pill bg-light text-dark ms-1" id="cartDrawerCountBadge">{% if user.is_authenticated %}{{ nav_cart_count|default:"0" }}{% else %}0{% endif %} items</span>
+    </div>
+    <button type="button" class="btn-close text-reset shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+
+  <div class="offcanvas-body d-flex flex-column p-4" id="cartDrawerBody">
+    {% include 'shop/partials/cart_drawer_body.html' %}
+  </div>
+</div>
+
+<!-- =========================================================================
+     3. Quick-View Product Modal (#quickViewModal)
+     ========================================================================= -->
+<div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 overflow-hidden" style="border-radius:var(--cc-radius-lg);">
+      <div class="modal-body p-0 position-relative">
+        <button type="button" class="btn-close position-absolute top-0 end-0 m-3 z-3 shadow-none bg-white p-2 rounded-circle" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="row g-0">
+          <div class="col-md-6 bg-light d-flex align-items-center justify-content-center p-4">
+            <img id="qvImage" src="{% static 'shop/img/barnaby_bear.jpg' %}" alt="Product" class="img-fluid rounded-3 shadow-sm" style="max-height:360px; object-fit:cover;">
+          </div>
+          <div class="col-md-6 p-4 d-flex flex-column justify-content-between">
+            <div>
+              <span id="qvCategory" class="badge-tag-warm mb-2">Soft Companion</span>
+              <h3 id="qvTitle" class="serif-heading mb-1">Soft Companion</h3>
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="star-rating small">
+                  <i class="fa-solid fa-star"></i>
+                  <i class="fa-solid fa-star"></i>
+                  <i class="fa-solid fa-star"></i>
+                  <i class="fa-solid fa-star"></i>
+                  <i class="fa-solid fa-star"></i>
+                </div>
+                <span class="small text-muted">(Verified Parent Favorite)</span>
+              </div>
+              <h4 id="qvPrice" class="fw-bold mb-3" style="color:var(--cc-gold-dark);">₹45.00</h4>
+              <p id="qvDescription" class="small text-muted mb-3" style="line-height:1.6;">
+                Handcrafted from 100% certified organic cotton. Incredibly soft, baby-safe, and washable.
+              </p>
+
+              <!-- Badges -->
+              <div class="d-flex flex-wrap gap-2 mb-4">
+                <span class="badge bg-light text-dark border"><i class="fa-solid fa-leaf text-success me-1"></i> 100% Organic</span>
+                <span class="badge bg-light text-dark border"><i class="fa-solid fa-shield-heart text-success me-1"></i> Safe for 0+</span>
+                <span class="badge bg-light text-dark border"><i class="fa-solid fa-hand-holding-heart text-warning me-1"></i> Hand-stitched</span>
+              </div>
+            </div>
+
+            <div>
+              {% if user.is_authenticated %}
+                <form id="qvAddForm" method="post" action="#">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-cc w-100 py-2 mb-2">
+                    <i class="fa-solid fa-bag-shopping me-2"></i> Add to Cuddle Bag
+                  </button>
+                </form>
+              {% else %}
+                <button type="button" class="btn btn-cc w-100 py-2 mb-2" onclick="promptLoginRequired()">
+                  <i class="fa-solid fa-lock me-2"></i> Sign In to Add to Bag
+                </button>
+              {% endif %}
+              <a id="qvFullDetailLink" href="#" class="btn btn-outline-cc btn-sm w-100">
+                View Full Product Story &rarr;
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     4. CuddleCart Club Modal (#cuddleClubModal)
+     ========================================================================= -->
+<div class="modal fade" id="cuddleClubModal" tabindex="-1" aria-labelledby="cuddleClubModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:540px;">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: var(--cc-radius-lg); overflow: hidden;">
+      <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #173A32 0%, #214E43 100%); color: white;">
+        <div class="d-flex align-items-center gap-2">
+          <i class="fa-solid fa-crown text-warning fs-4"></i>
+          <div>
+            <h5 class="modal-title serif-heading mb-0 text-white" id="cuddleClubModalLabel">CuddleCart Family</h5>
+            <span class="small text-white-50">Our Dedicated Member Perks • Free to Join</span>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <!-- Purpose -->
+        <div class="mb-4 text-center">
+          <span class="badge-tag-gold mb-2"><i class="fa-solid fa-sparkles me-1"></i> Cherished Family Benefits</span>
+          <p class="small text-muted mb-0">
+            Find your new favourite cuddle companion and cherish lifetime childhood memories with every handcrafted companion adopted.
+          </p>
+        </div>
+
+        <!-- 4 Key Authentic Family Perks (NO DISCOUNTS / NO COUPONS) -->
+        <div class="row g-3 mb-4">
+          <div class="col-6">
+            <div class="p-3 rounded-3 bg-light h-100 border">
+              <i class="fa-solid fa-gift text-success mb-2 fs-5"></i>
+              <h6 class="fw-bold mb-1 small text-dark">Gift Box Packaging</h6>
+              <p class="text-muted mb-0" style="font-size:0.75rem;">Complimentary bespoke ribbon & gift card with every soft toy.</p>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="p-3 rounded-3 bg-light h-100 border">
+              <i class="fa-solid fa-shield-heart text-danger mb-2 fs-5"></i>
+              <h6 class="fw-bold mb-1 small text-dark">Child-Safe Promise</h6>
+              <p class="text-muted mb-0" style="font-size:0.75rem;">100% GOTS certified organic fibers, embroidered and washable.</p>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="p-3 rounded-3 bg-light h-100 border">
+              <i class="fa-solid fa-truck-fast text-primary mb-2 fs-5"></i>
+              <h6 class="fw-bold mb-1 small text-dark">Free Fast Delivery</h6>
+              <p class="text-muted mb-0" style="font-size:0.75rem;">Express carbon-neutral shipping on orders over ₹600 (₹80 fee under ₹600).</p>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="p-3 rounded-3 bg-light h-100 border">
+              <i class="fa-solid fa-cake-candles text-warning mb-2 fs-5"></i>
+              <h6 class="fw-bold mb-1 small text-dark">Birthday Buddy</h6>
+              <p class="text-muted mb-0" style="font-size:0.75rem;">Personalized companion recommendations for your child's special day.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex flex-column gap-2">
+          {% if user.is_authenticated %}
+            <div class="alert alert-success py-2 px-3 small text-center mb-0" style="border-radius: var(--cc-radius);">
+              <i class="fa-solid fa-circle-check me-1"></i> You are logged in as a valued CuddleCart member!
+            </div>
+          {% else %}
+            <a href="{% url 'shop:login' %}" class="btn btn-cc w-100 py-2">
+              <i class="fa-solid fa-user-plus me-2"></i> Sign In or Create an Account
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     4. Information Modals (Contact, Care, Shipping, Privacy, Sustainability)
+     ========================================================================= -->
+<div class="modal fade" id="contactModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-4" style="border-radius:var(--cc-radius-lg);">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="serif-heading mb-0"><i class="fa-solid fa-envelope text-success me-2"></i>Get in Touch</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body small text-muted">
+        <p>We'd love to hear from you! Whether you have questions about our organic plushies or need a custom gift recommendation, reach out anytime.</p>
+        <p><strong>Email:</strong> care@cuddlecart.com<br><strong>Hours:</strong> Mon – Fri, 9am – 6pm EST</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="shippingModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-4" style="border-radius:var(--cc-radius-lg);">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="serif-heading mb-0"><i class="fa-solid fa-truck-fast text-success me-2"></i>Shipping & Returns</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body small text-muted">
+        <p>We deliver everywhere with care. Free carbon-neutral shipping on all orders over $50.</p>
+        <ul>
+          <li>Standard Delivery: 3-5 business days.</li>
+          <li>Express Delivery: 1-2 business days with luxury gift packaging.</li>
+          <li>30-Day Love-It-or-Return-It Guarantee: Hassle-free exchanges and returns.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-4" style="border-radius:var(--cc-radius-lg);">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="serif-heading mb-0"><i class="fa-solid fa-lock text-success me-2"></i>Privacy Policy</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body small text-muted">
+        <p>Your privacy and safety are paramount. We never sell your personal data. All payment details are encrypted with bank-level SSL security.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="sustainabilityModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-4" style="border-radius:var(--cc-radius-lg);">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="serif-heading mb-0"><i class="fa-solid fa-seedling text-success me-2"></i>Our Green Promise</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body small text-muted">
+        <p>We believe in leaving a healthier world for the children who cherish our toys. 100% GOTS certified organic farming, non-toxic plant dyes, and compostable shipping boxes.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     5. Cuddle Toast Notification Banner
+     ========================================================================= -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 2000;">
+  <div id="cuddleToast" class="toast align-items-center border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" style="border-radius:var(--cc-radius); background:#FFF;">
+    <div class="d-flex">
+      <div class="toast-body d-flex align-items-center gap-2" id="toastMessage">
+        <i class="fa-solid fa-circle-check text-success"></i>
+        <span>Added to your cuddle bag!</span>
+      </div>
+      <button type="button" class="btn-close me-2 m-auto shadow-none" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<!-- Ambient Lullaby Synth Audio & Interactive Script -->
+<script>
+  // Auth Tab Switcher
+  function switchAuthTab(tab) {
+    const loginBtn = document.getElementById('tabLoginBtn');
+    const registerBtn = document.getElementById('tabRegisterBtn');
+    const loginPanel = document.getElementById('authLoginPanel');
+    const registerPanel = document.getElementById('authRegisterPanel');
+    
+    if (tab === 'login') {
+      loginBtn.classList.add('active');
+      registerBtn.classList.remove('active');
+      loginPanel.classList.remove('d-none');
+      registerPanel.classList.add('d-none');
+    } else {
+      registerBtn.classList.add('active');
+      loginBtn.classList.remove('active');
+      registerPanel.classList.remove('d-none');
+      loginPanel.classList.add('d-none');
+    }
+  }
+
+  // Quick Demo Login Helper
+  function fillDemoLogin(username, password) {
+    document.getElementById('modal_username').value = username;
+    document.getElementById('modal_password').value = password;
+  }
+
+  // Password Visibility Toggle
+  function togglePasswordVisibility(fieldId, btn) {
+    const input = document.getElementById(fieldId);
+    if (!input) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
+    } else {
+      input.type = 'password';
+      btn.innerHTML = '<i class="fa-regular fa-eye"></i>';
+    }
+  }
+
+  // Initialize Free Shipping Progress Bar
+  document.querySelectorAll('.cart-shipping-progress').forEach(function(bar) {
+    const pct = Math.min(100, Math.max(0, parseInt(bar.dataset.progress || '0', 10)));
+    bar.style.width = pct + '%';
+  });
+
+  // Auth modal event trigger from buttons
+  const authModalEl = document.getElementById('authModal');
+  if (authModalEl) {
+    authModalEl.addEventListener('show.bs.modal', function(event) {
+      const button = event.relatedTarget;
+      if (button && button.getAttribute('data-tab') === 'register') {
+        switchAuthTab('register');
+      } else {
+        switchAuthTab('login');
+      }
+    });
+  }
+
+  // Show dynamic toast helper
+  function showCuddleToast(htmlMessage) {
+    const toastEl = document.getElementById('cuddleToast');
+    const msgEl = document.getElementById('toastMessage');
+    if (toastEl && msgEl) {
+      msgEl.innerHTML = htmlMessage;
+      const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+      toast.show();
+    }
+  }
+
+  // Global helper: Prompts login when guest clicks Add to Bag or Cart
+  function promptLoginRequired(productName) {
+    const itemMsg = productName ? `to add "${productName}" to your cuddle bag` : 'to start shopping and add items to your cart';
+    showCuddleToast(`<i class="fa-solid fa-lock text-warning me-1"></i> Please <strong>Sign In</strong> ${itemMsg}!`);
+    const authModalEl = document.getElementById('authModal');
+    if (authModalEl) {
+      switchAuthTab('login');
+      const modal = bootstrap.Modal.getOrCreateInstance(authModalEl);
+      modal.show();
+    } else {
+      window.location.href = "{% url 'shop:login' %}";
+    }
+  }
+
+  // Handle Newsletter Subscribe -> Shows positive confirmation
+  function handleNewsletter(e) {
+    e.preventDefault();
+    const successBox = document.getElementById('newsletterSuccess');
+    if (successBox) {
+      successBox.classList.remove('d-none');
+    }
+    showCuddleToast('<i class="fa-solid fa-heart text-danger me-1"></i> Thank you for subscribing! You are now part of the CuddleCart family.');
+    const emailInput = document.getElementById('newsletterEmail');
+    if (emailInput) emailInput.value = '';
+  }
+
+  // Modal Login Form Validator
+  function validateModalLoginForm(event) {
+    const uInput = document.getElementById('modal_username');
+    const pInput = document.getElementById('modal_password');
+    const alertBox = document.getElementById('modalLoginAlert');
+    const alertMsg = document.getElementById('modalLoginAlertMsg');
+
+    const errors = [];
+    const uVal = (uInput.value || '').trim();
+    const pVal = pInput.value || '';
+
+    if (!uVal) {
+      errors.push('Please enter your email address or username.');
+    } else if (/<[^>]+>|&nbsp;/.test(uVal.toLowerCase())) {
+      errors.push('Input cannot contain HTML or space tags.');
+    }
+
+    if (!pVal) {
+      errors.push('Please enter your password.');
+    }
+
+    if (errors.length > 0) {
+      event.preventDefault();
+      alertMsg.innerHTML = '<ul class="mb-0 ps-3">' + errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
+      alertBox.classList.remove('d-none');
+      return false;
+    }
+
+    alertBox.classList.add('d-none');
+    return true;
+  }
+
+  // Modal Register Form Password Strength & Match helpers
+  function checkModalPasswordStrength() {
+    const p1Input = document.getElementById('reg_password1');
+    const val = p1Input ? p1Input.value || '' : '';
+
+    const hasLength = val.length >= 8;
+    const hasUpper = /[A-Z]/.test(val);
+    const hasNumber = /[0-9]/.test(val);
+    const hasSpecial = /[^A-Za-z0-9]/.test(val);
+
+    updateBadge(document.getElementById('mCritLength'), hasLength, '8+ chars');
+    updateBadge(document.getElementById('mCritUpper'), hasUpper, '1 Uppercase');
+    updateBadge(document.getElementById('mCritNumber'), hasNumber, '1 Number');
+    updateBadge(document.getElementById('mCritSpecial'), hasSpecial, '1 Symbol');
+
+    checkModalPasswordMatch();
+  }
+
+  function checkModalPasswordMatch() {
+    const p1 = document.getElementById('reg_password1')?.value || '';
+    const p2Input = document.getElementById('reg_password2');
+    const matchMsg = document.getElementById('mPasswordMatchMsg');
+    const p2 = p2Input ? p2Input.value || '' : '';
+
+    if (!matchMsg || !p2Input) return;
+
+    if (!p2) {
+      matchMsg.textContent = '';
+      return;
+    }
+
+    if (p1 === p2) {
+      matchMsg.innerHTML = '<i class="fa-solid fa-check me-1"></i> Passwords match!';
+      matchMsg.className = 'form-text small mt-1 text-success fw-semibold';
+      p2Input.classList.remove('is-invalid');
+      p2Input.classList.add('is-valid');
+    } else {
+      matchMsg.innerHTML = '<i class="fa-solid fa-circle-xmark me-1"></i> Passwords do not match!';
+      matchMsg.className = 'form-text small mt-1 text-danger fw-semibold';
+      p2Input.classList.remove('is-valid');
+      p2Input.classList.add('is-invalid');
+    }
+  }
+
+  function validateModalRegisterForm(event) {
+    const alertBox = document.getElementById('modalRegisterAlert');
+    const alertMsg = document.getElementById('modalRegisterAlertMsg');
+    const nameInput = document.getElementById('reg_username');
+    const emailInput = document.getElementById('reg_email');
+    const p1Input = document.getElementById('reg_password1');
+    const p2Input = document.getElementById('reg_password2');
+
+    const errors = [];
+    const rawName = (nameInput.value || '').trim();
+    if (!rawName) {
+      errors.push('Full name cannot be empty or contain only blank spaces.');
+    } else if (/<[^>]+>|&nbsp;|<space>/.test(nameInput.value.toLowerCase())) {
+      errors.push('Full name cannot contain space tags (&nbsp;) or HTML tags.');
+    } else if (!/[a-zA-Z]/.test(rawName)) {
+      errors.push('Full name must contain at least one letter.');
+    } else if (rawName.length < 3) {
+      errors.push('Full name must be at least 3 characters long.');
+    }
+
+    const emailVal = (emailInput.value || '').trim();
+    const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+    if (!emailVal || !emailRegex.test(emailVal) || emailVal.includes('..')) {
+      errors.push('Please enter a valid email address.');
+    }
+
+    const p1 = p1Input ? p1Input.value : '';
+    const p2 = p2Input ? p2Input.value : '';
+
+    if (!p1 || p1.length < 8) errors.push('Password must be at least 8 characters long.');
+    if (!/[A-Z]/.test(p1)) errors.push('Password must contain at least one uppercase letter (A-Z).');
+    if (!/[a-z]/.test(p1)) errors.push('Password must contain at least one lowercase letter (a-z).');
+    if (!/[0-9]/.test(p1)) errors.push('Password must contain at least one number (0-9).');
+    if (!/[^A-Za-z0-9]/.test(p1)) errors.push('Password must contain at least one special symbol (!@#$%^&*).');
+
+    if (!p2) {
+      errors.push('Please re-enter your password to confirm.');
+    } else if (p1 !== p2) {
+      errors.push('Passwords do not match! Please make sure both passwords are identical.');
+    }
+
+    if (errors.length > 0) {
+      event.preventDefault();
+      alertMsg.innerHTML = '<ul class="mb-0 ps-3">' + errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
+      alertBox.classList.remove('d-none');
+      return false;
+    }
+
+    alertBox.classList.add('d-none');
+    return true;
+  }
+
+  function openQuickView(name, price, image, description, category, addUrl, detailUrl) {
+    const titleEl = document.getElementById('qvTitle');
+    const priceEl = document.getElementById('qvPrice');
+    const imgEl = document.getElementById('qvImage');
+    const descEl = document.getElementById('qvDescription');
+    const catEl = document.getElementById('qvCategory');
+    const formEl = document.getElementById('qvAddForm');
+    const detailEl = document.getElementById('qvFullDetailLink');
+
+    if (titleEl) titleEl.textContent = name || 'Soft Companion';
+    if (priceEl) priceEl.textContent = price ? (price.toString().startsWith('₹') ? price : '₹' + price) : '₹0.00';
+    if (imgEl && image) imgEl.src = image;
+    if (descEl) descEl.textContent = description || 'Handcrafted with 100% certified organic cotton. Incredibly soft, baby-safe, and washable.';
+    if (catEl) catEl.textContent = category || 'Soft Companion';
+    if (formEl && addUrl) formEl.action = addUrl;
+    if (detailEl && detailUrl) detailEl.href = detailUrl;
+
+    const modalEl = document.getElementById('quickViewModal');
+    if (modalEl) {
+      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      modal.show();
+    }
+  }
+
+  function openQuickViewModal(btn) {
+    if (!btn) return;
+    openQuickView(
+      btn.dataset.name,
+      btn.dataset.price,
+      btn.dataset.image,
+      btn.dataset.description,
+      btn.dataset.category,
+      btn.dataset.addUrl,
+      btn.dataset.detailUrl
+    );
+  }
+
+
+  // =========================================================================
+  // Seamless Cart & Wishlist AJAX Handler (Zero page refresh / No jump to top)
+  // =========================================================================
+  document.addEventListener('submit', function(e) {
+    const form = e.target;
+    if (!form || !form.action) return;
+
+    const actionUrl = form.getAttribute('action') || '';
+    const isCartAdd = actionUrl.includes('/cart/add/');
+    const isWishlistAdd = actionUrl.includes('/wishlist/add/');
+
+    if (!isCartAdd && !isWishlistAdd) return;
+
+    // Check if the submission is a "Buy Now" action
+    const submitter = e.submitter;
+    const isBuyNow = (submitter && (submitter.name === 'buy_now' || submitter.value === 'buy_now')) ||
+                     form.querySelector('input[name="buy_now"][value="1"]') !== null;
+
+    // For Buy Now, allow normal redirect or redirect after cart add
+    if (isBuyNow) {
+      return; // Let standard form submission handle direct checkout redirect
+    }
+
+    // Prevent default full page reload that kicks user to top of page
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    formData.append('ajax', '1');
+
+    const submitBtn = submitter || form.querySelector('button[type="submit"]');
+    const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+    }
+
+    fetch(actionUrl, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(res => {
+      if (res.status === 401) {
+        promptLoginRequired();
+        throw new Error('Authentication required');
+      }
+      return res.json();
+    })
+    .then(data => {
+      if (data.success) {
+        if (data.redirect_url) {
+          window.location.href = data.redirect_url;
+          return;
+        }
+
+        // Show pleasant toast notification
+        if (data.message) {
+          showCuddleToast(`<i class="fa-solid fa-circle-check text-success me-1"></i> ${data.message}`);
+        }
+
+        // Update Cart badges if cart count changed
+        if (typeof data.cart_count !== 'undefined') {
+          document.querySelectorAll('.cart-count-badge').forEach(el => {
+            el.textContent = data.cart_count;
+            if (data.cart_count > 0) {
+              el.classList.remove('d-none');
+            } else {
+              el.classList.add('d-none');
+            }
+          });
+        }
+
+        // When a product is added to cart:
+        if (isCartAdd) {
+          // 1. Update Cart Drawer contents with fresh rendered HTML
+          const drawerBody = document.getElementById('cartDrawerBody');
+          if (drawerBody && data.drawer_html) {
+            drawerBody.innerHTML = data.drawer_html;
+          }
+
+          // 2. Update Cart Drawer header item count badge
+          const drawerBadge = document.getElementById('cartDrawerCountBadge');
+          if (drawerBadge && typeof data.cart_count !== 'undefined') {
+            drawerBadge.textContent = `${data.cart_count} items`;
+          }
+
+          // 3. Provide tactile feedback on the Add to Bag button
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fa-solid fa-check me-1"></i> Added to Bag!';
+            submitBtn.classList.remove('btn-cc', 'btn-outline-cc');
+            submitBtn.classList.add('btn-success');
+            setTimeout(() => {
+              submitBtn.innerHTML = originalBtnHtml;
+              submitBtn.classList.remove('btn-success');
+              submitBtn.classList.add('btn-cc');
+            }, 2200);
+          }
+
+          // 4. If Quick View modal was open, close it
+          const qvModalEl = document.getElementById('quickViewModal');
+          if (qvModalEl) {
+            const qvModal = bootstrap.Modal.getInstance(qvModalEl);
+            if (qvModal) qvModal.hide();
+          }
+
+          // 5. Automatically slide-over the Cart Drawer so user immediately sees their product!
+          const drawerEl = document.getElementById('cartDrawer');
+          if (drawerEl) {
+            const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(drawerEl);
+            bsOffcanvas.show();
+          }
+        } else {
+          // If wishlist or other action, restore button
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+          }
+        }
+
+        // Update Wishlist badges and heart icon states
+        if (typeof data.wishlist_count !== 'undefined') {
+          document.querySelectorAll('.wishlist-count-badge').forEach(el => {
+            el.textContent = data.wishlist_count;
+            if (data.wishlist_count > 0) {
+              el.classList.remove('d-none');
+            } else {
+              el.classList.add('d-none');
+            }
+          });
+        }
+
+        if (isWishlistAdd) {
+          const heartIcon = submitBtn ? submitBtn.querySelector('i') : null;
+          if (data.in_wishlist) {
+            if (submitBtn) submitBtn.classList.add('active', 'text-danger');
+            if (heartIcon) {
+              heartIcon.classList.remove('fa-regular');
+              heartIcon.classList.add('fa-solid', 'text-danger');
+            }
+          } else {
+            if (submitBtn) submitBtn.classList.remove('active', 'text-danger');
+            if (heartIcon) {
+              heartIcon.classList.remove('fa-solid', 'text-danger');
+              heartIcon.classList.add('fa-regular');
+            }
+          }
+        }
+      } else {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnHtml;
+        }
+        if (data.message) {
+          showCuddleToast(`<i class="fa-solid fa-triangle-exclamation text-warning me-1"></i> ${data.message}`);
+        }
+      }
+    })
+    .catch(err => {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnHtml;
+      }
+      console.warn('Cart/Wishlist action error:', err);
+    });
+  });
+
+  // Handle removing items from slide-over Cart Drawer via AJAX without full page reload
+  window.handleDrawerRemoveItem = function(event, itemId, removeUrl) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    const itemEl = document.querySelector(`.cart-drawer-item[data-item-id="${itemId}"]`);
+    if (itemEl) {
+      itemEl.style.opacity = '0.35';
+      itemEl.style.pointerEvents = 'none';
+    }
+
+    fetch(removeUrl, {
+      method: 'GET',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.success) {
+        if (data.message) {
+          showCuddleToast(`<i class="fa-solid fa-circle-check text-success me-1"></i> ${data.message}`);
+        }
+        if (typeof data.cart_count !== 'undefined') {
+          document.querySelectorAll('.cart-count-badge').forEach(el => {
+            el.textContent = data.cart_count;
+            if (data.cart_count > 0) {
+              el.classList.remove('d-none');
+            } else {
+              el.classList.add('d-none');
+            }
+          });
+          const drawerBadge = document.getElementById('cartDrawerCountBadge');
+          if (drawerBadge) {
+            drawerBadge.textContent = `${data.cart_count} items`;
+          }
+        }
+        const drawerBody = document.getElementById('cartDrawerBody');
+        if (drawerBody && data.drawer_html) {
+          drawerBody.innerHTML = data.drawer_html;
+        }
+      } else {
+        window.location.href = removeUrl;
+      }
+    })
+    .catch(err => {
+      console.warn('Drawer remove item error:', err);
+      window.location.href = removeUrl;
+    });
+  };
+</script>
+
+<!-- Global CuddleCart In-App Confirmation Modal (Eliminating IP popups!) -->
+<div class="modal fade" id="cuddleConfirmModal" tabindex="-1" aria-labelledby="cuddleConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+    <div class="modal-content card-cc border-0 shadow-lg text-center p-3" style="border-radius: var(--cc-radius-lg);">
+      <div class="modal-body p-3">
+        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 58px; height: 58px; background: #FFF3CD; color: #856404; font-size: 1.5rem;">
+          <i class="fa-solid fa-circle-question"></i>
+        </div>
+        <h5 class="serif-heading mb-2 text-dark" id="cuddleConfirmModalLabel">Please Confirm</h5>
+        <p class="text-muted small mb-4" id="cuddleConfirmMsg">Are you sure you want to proceed?</p>
+        <div class="d-flex justify-content-center gap-2">
+          <button type="button" class="btn btn-outline-secondary px-3 py-2 btn-sm rounded-pill" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger px-4 py-2 btn-sm rounded-pill" id="cuddleConfirmProceedBtn">Yes, Proceed</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Auto-dismiss alert messages with timer (5 seconds)
+    document.querySelectorAll('.alert-dismissible').forEach(function(alertEl) {
+      const dismissTimer = setTimeout(function() {
+        if (alertEl && alertEl.parentNode) {
+          try {
+            const bsAlert = bootstrap.Alert.getOrCreateInstance(alertEl);
+            if (bsAlert) {
+              bsAlert.close();
+            } else {
+              alertEl.classList.remove('show');
+              setTimeout(function() { alertEl.remove(); }, 150);
+            }
+          } catch(e) {
+            alertEl.classList.remove('show');
+            setTimeout(function() { alertEl.remove(); }, 150);
+          }
+        }
+      }, 5000);
+
+      alertEl.addEventListener('close.bs.alert', function() {
+        clearTimeout(dismissTimer);
+      });
+    });
+
+    let pendingAction = null;
+    document.addEventListener('click', function(e) {
+      const trigger = e.target.closest('[data-confirm]');
+      if (trigger) {
+        e.preventDefault();
+        const msg = trigger.getAttribute('data-confirm');
+        const modalEl = document.getElementById('cuddleConfirmModal');
+        if (modalEl) {
+          document.getElementById('cuddleConfirmMsg').textContent = msg;
+          pendingAction = function() {
+            const form = trigger.closest('form');
+            if (form && trigger.type === 'submit') {
+              form.submit();
+            } else if (trigger.href) {
+              window.location.href = trigger.href;
+            }
+          };
+          const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+          modal.show();
+        }
+      }
+    });
+
+    const proceedBtn = document.getElementById('cuddleConfirmProceedBtn');
+    if (proceedBtn) {
+      proceedBtn.addEventListener('click', function() {
+        const modalEl = document.getElementById('cuddleConfirmModal');
+        if (modalEl) {
+          const modal = bootstrap.Modal.getInstance(modalEl);
+          if (modal) modal.hide();
+        }
+        if (typeof pendingAction === 'function') {
+          pendingAction();
+          pendingAction = null;
+        }
+      });
+    }
+  });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

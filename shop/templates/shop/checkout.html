@@ -1,0 +1,441 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Secure Checkout — CuddleCart{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Header -->
+  <div class="mb-4 pb-2 border-bottom">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-1 small">
+        <li class="breadcrumb-item"><a href="{% url 'shop:home' %}" class="text-decoration-none" style="color:var(--cc-green);"><i class="fa-solid fa-house-chimney me-1"></i> Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'shop:cart_view' %}" class="text-decoration-none" style="color:var(--cc-green);">Shopping Bag</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Checkout</li>
+      </ol>
+    </nav>
+    <h1 class="serif-heading mb-1" style="font-size: 2rem;">Secure Checkout</h1>
+    <p class="text-muted small mb-0">Complete your adoption details to welcome your new cuddle companion home.</p>
+  </div>
+
+  <div class="row g-4 mb-5">
+    <!-- Left Column: Checkout Steps & Form -->
+    <div class="col-lg-7">
+      <form method="post" id="checkoutForm">
+        {% csrf_token %}
+
+        <!-- Step 1: Cart Items Review -->
+        <div class="card-cc p-4 mb-4 shadow-sm" style="border-radius: var(--cc-radius-lg); background: #ffffff;">
+          <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge rounded-circle text-white d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background: var(--cc-green);">1</span>
+              <h5 class="serif-heading mb-0 fs-5">Review Selected Companions</h5>
+            </div>
+            <a href="{% url 'shop:cart_view' %}" class="small text-decoration-none fw-semibold" style="color: var(--cc-green);">
+              <i class="fa-solid fa-pencil me-1"></i> Modify Bag
+            </a>
+          </div>
+
+          <div class="list-group list-group-flush mb-2">
+            {% for item in items %}
+            <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center bg-transparent border-bottom">
+              <div class="d-flex align-items-center gap-3">
+                <div class="product-img-wrap rounded-3 overflow-hidden" style="width: 54px; height: 54px; background: var(--cc-sand); flex-shrink: 0;">
+                  {% if item.product.get_image %}
+                    <img src="{{ item.product.get_image }}" alt="{{ item.product.name }}" class="w-100 h-100 object-fit-cover">
+                  {% else %}
+                    <img src="{% static 'shop/img/barnaby_bear.jpg' %}" alt="{{ item.product.name }}" class="w-100 h-100 object-fit-cover">
+                  {% endif %}
+                </div>
+                <div>
+                  <h6 class="mb-0 small fw-bold text-dark" style="font-size: 0.95rem;">{{ item.product.name }}</h6>
+                  <div class="small text-muted">
+                    <span class="badge bg-light text-dark border me-1">{{ item.selected_size|default:"Medium" }}</span>
+                    <span>{{ item.quantity }} &times; ₹{{ item.get_unit_price }}</span>
+                  </div>
+                </div>
+              </div>
+              <span class="fw-bold text-dark">₹{{ item.get_subtotal }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Step 2: Delivery Address Selection -->
+        <div class="card-cc p-4 mb-4 shadow-sm" style="border-radius: var(--cc-radius-lg); background: #ffffff;">
+          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge rounded-circle text-white d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background: var(--cc-green);">2</span>
+              <h5 class="serif-heading mb-0 fs-5">Delivery Destination</h5>
+            </div>
+            <button type="button" class="btn btn-outline-cc btn-sm" data-bs-toggle="modal" data-bs-target="#newAddressModal">
+              <i class="fa-solid fa-plus me-1"></i> Add New Address
+            </button>
+          </div>
+
+          {% if addresses %}
+            <p class="small text-muted mb-3">
+              Click an address card below to select it as your delivery destination for this order:
+            </p>
+
+            <!-- Selectable Address Cards -->
+            <div class="row g-3 mb-3" id="addressCardsContainer">
+              {% for addr in addresses %}
+              <div class="col-sm-6">
+                <div class="address-selection-card p-3 rounded-3 border bg-white small position-relative h-100"
+                     style="cursor: pointer; transition: all 0.2s ease;"
+                     data-address-id="{{ addr.id }}"
+                     onclick="selectDeliveryAddress('{{ addr.id }}')">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                      <input type="radio" name="addr_radio_selector" id="addr_radio_{{ addr.id }}" value="{{ addr.id }}" class="form-check-input mt-0" style="cursor: pointer;">
+                      <strong class="text-dark fs-6">{{ addr.full_name|default:user.username }}</strong>
+                    </div>
+                    <div class="d-flex flex-wrap gap-1 justify-content-end">
+                      {% if addr.is_default %}
+                        <span class="badge bg-light text-secondary border default-badge" title="Saved default in your account">Saved Default</span>
+                      {% endif %}
+                      <span class="badge bg-success text-white selected-badge d-none">
+                        <i class="fa-solid fa-circle-check me-1"></i> Deliver Here
+                      </span>
+                    </div>
+                  </div>
+                  <div class="text-muted d-block ps-4 mb-2">{{ addr.get_full_address }}</div>
+                  <div class="text-muted small ps-4 d-flex justify-content-between align-items-center">
+                    <span><i class="fa-solid fa-phone me-1"></i> Ph: {{ addr.phone|default:"-" }}</span>
+                    <span class="text-capitalize badge bg-light text-dark border">{{ addr.address_type|default:"home" }}</span>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            <!-- Synced Address Selector Dropdown -->
+            <div class="p-2 rounded-3 bg-light border">
+              <label class="form-label small text-muted fw-semibold mb-1">Selected Address:</label>
+              {{ form.address }}
+            </div>
+          {% else %}
+            <div class="alert alert-warning py-3 px-3 mb-2 d-flex align-items-center gap-3" style="border-radius: var(--cc-radius);">
+              <i class="fa-solid fa-location-dot fa-2x text-warning"></i>
+              <div>
+                <strong class="d-block text-dark">No delivery address saved.</strong>
+                <p class="small mb-2 mt-1">Please add a shipping address to fulfill your order delivery.</p>
+                <button type="button" class="btn btn-sm btn-cc" data-bs-toggle="modal" data-bs-target="#newAddressModal">
+                  <i class="fa-solid fa-plus me-1"></i> + Add Address Now
+                </button>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Step 3: Payment Method Selection -->
+        <div class="card-cc p-4 mb-4 shadow-sm" style="border-radius: var(--cc-radius-lg); background: #ffffff;">
+          <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+            <span class="badge rounded-circle text-white d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background: var(--cc-green);">3</span>
+            <h5 class="serif-heading mb-0 fs-5">Payment Preference</h5>
+          </div>
+
+          <div class="mb-3">
+            <div class="form-check p-3 border rounded-3 mb-3" style="background: var(--cc-cream-light); border-color: var(--cc-border);">
+              <input class="form-check-input ms-0 me-3" type="radio" name="payment_method" id="pay_online" value="online" checked style="cursor: pointer;">
+              <label class="form-check-label fw-bold text-dark d-block" for="pay_online" style="cursor: pointer;">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span><i class="fa-solid fa-credit-card me-2" style="color: var(--cc-green);"></i> Online Payment (UPI, Card, Net Banking)</span>
+                  <span class="badge bg-success-subtle text-success border border-success-subtle">Recommended</span>
+                </div>
+                <span class="d-block small text-muted fw-normal mt-1">
+                  Pay securely via simulated Instant Payment Gateway (UPI QR, Cards, Internet Banking).
+                </span>
+              </label>
+            </div>
+
+            <div class="form-check p-3 border rounded-3 bg-light">
+              <input class="form-check-input ms-0 me-3" type="radio" name="payment_method" id="pay_cod" value="cod" style="cursor: pointer;">
+              <label class="form-check-label fw-bold text-dark d-block" for="pay_cod" style="cursor: pointer;">
+                <i class="fa-solid fa-hand-holding-dollar me-2 text-warning"></i> Cash on Delivery (COD)
+                <span class="d-block small text-muted fw-normal mt-1">
+                  Pay cash at doorstep when your soft toy parcel is safely delivered.
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Final Confirmation Button -->
+        <div class="card-cc p-4 shadow-sm" style="border-radius: var(--cc-radius-lg); background: #ffffff;">
+          <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+            <span class="badge rounded-circle text-white d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background: var(--cc-green);">4</span>
+            <h5 class="serif-heading mb-0 fs-5">Order Confirmation</h5>
+          </div>
+
+          <p class="text-muted small mb-3">
+            By clicking below, you confirm your order with CuddleCart and agree to our gentle craftsmanship warranty and delivery terms.
+          </p>
+
+          <button type="submit" class="btn btn-cc w-100 py-3 fs-5 shadow-sm" {% if not addresses %}disabled{% endif %}>
+            <i class="fa-solid fa-shield-check me-2"></i> Confirm & Proceed (₹{{ total_amount }})
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Right Column: Order Summary & Coupon Card -->
+    <div class="col-lg-5">
+      <div class="card-cc p-4 sticky-top shadow-sm mb-4" style="top: 96px; border-radius: var(--cc-radius-lg); background: #ffffff;">
+        <h5 class="serif-heading mb-3">Summary of Adoption</h5>
+        
+        <div class="d-flex justify-content-between mb-2 small text-muted">
+          <span>Items Subtotal</span>
+          <span class="fw-semibold text-dark">₹{{ subtotal }}</span>
+        </div>
+
+        {% if discount > 0 %}
+        <div class="d-flex justify-content-between mb-2 small text-success">
+          <span>CuddleCart Club (10% Discount)</span>
+          <span class="fw-bold">-₹{{ discount }}</span>
+        </div>
+        {% endif %}
+
+        <div class="d-flex justify-content-between mb-2 small text-muted">
+          <span>Estimated GST (5%)</span>
+          <span class="fw-semibold text-dark">+₹{{ tax }}</span>
+        </div>
+
+        <div class="d-flex justify-content-between mb-3 small text-muted">
+          <span>Express Delivery</span>
+          <span class="{% if shipping_fee == 0 %}text-success fw-bold{% else %}text-dark fw-semibold{% endif %}">
+            {% if shipping_fee == 0 %}FREE (Orders &gt; ₹600){% else %}₹{{ shipping_fee }}{% endif %}
+          </span>
+        </div>
+
+        <!-- Coupon Box in Checkout -->
+        <div class="p-3 mb-3 bg-light rounded-3 border">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="small fw-bold text-dark"><i class="fa-solid fa-crown text-warning me-1"></i> Have a Club Coupon?</span>
+            {% if coupon_code %}
+              <a href="{% url 'shop:remove_coupon' %}?next={% url 'shop:checkout' %}" class="small text-danger text-decoration-none">Remove</a>
+            {% endif %}
+          </div>
+          {% if coupon_code %}
+            <div class="small text-success fw-semibold">
+              <i class="fa-solid fa-circle-check me-1"></i> Coupon <strong>{{ coupon_code }}</strong> Active
+            </div>
+          {% else %}
+            <form method="post" action="{% url 'shop:apply_coupon' %}" class="d-flex gap-2">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{% url 'shop:checkout' %}">
+              <input type="text" name="coupon_code" class="form-control form-control-sm text-uppercase" placeholder="Code (e.g. CLUB10)">
+              <button type="submit" class="btn btn-sm btn-outline-cc">Apply</button>
+            </form>
+          {% endif %}
+        </div>
+
+        <hr style="border-color: var(--cc-border);">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <span class="fw-bold" style="font-size: 1.15rem; color: var(--cc-green-dark);">Total Amount</span>
+          <span class="serif-heading fs-2" style="color: var(--cc-green-dark); font-weight: 700;">₹{{ total_amount }}</span>
+        </div>
+
+        <div class="p-3 bg-light rounded-3 small text-muted mb-3 border">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="fa-solid fa-gift text-success"></i>
+            <span class="fw-semibold text-dark">Included Complimentary With Your Order:</span>
+          </div>
+          <ul class="list-unstyled mb-0 small text-muted" style="line-height: 1.7;">
+            <li><i class="fa-solid fa-check text-success me-2"></i>Hand-tied satin keepsake ribbon</li>
+            <li><i class="fa-solid fa-check text-success me-2"></i>Official adoption passport & tax invoice</li>
+            <li><i class="fa-solid fa-check text-success me-2"></i>Child-safe protective travel tote</li>
+          </ul>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-center gap-3 text-muted small pt-2">
+          <span><i class="fa-solid fa-lock text-success me-1"></i> 256-bit SSL</span>
+          <span>&bull;</span>
+          <span><i class="fa-solid fa-truck-fast text-success me-1"></i> Fast Dispatch</span>
+          <span>&bull;</span>
+          <span><i class="fa-solid fa-heart text-danger me-1"></i> Pure Organic</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add New Address Directly at Checkout -->
+<div class="modal fade" id="newAddressModal" tabindex="-1" aria-labelledby="newAddressModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content card-cc border-0 shadow-lg" style="border-radius: var(--cc-radius-lg);">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title serif-heading" id="newAddressModalLabel">Add Delivery Address</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{% url 'shop:add_address' %}" id="checkoutNewAddressForm" onsubmit="return validateCheckoutAddressModal(event)">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'shop:checkout' %}">
+        <input type="hidden" name="country" value="India">
+        <div class="modal-body px-4">
+          <!-- Client alert in modal -->
+          <div id="checkoutAddressModalAlert" class="alert alert-danger py-2 px-3 small mb-3 d-none" role="alert"></div>
+
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Recipient Full Name *</label>
+            <input type="text" name="full_name" id="chkModalName" class="form-control" placeholder="Recipient full name" required value="{{ user.get_full_name|default:user.username }}">
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Contact Mobile Number (10 Digits) *</label>
+            <input type="tel" name="phone" id="chkModalPhone" class="form-control" placeholder="10-digit mobile number" required maxlength="10" pattern="[0-9]{10}" inputmode="numeric" value="{{ user.phone|default:'' }}">
+            <div class="form-text text-muted small" style="font-size:0.75rem;">Must be exactly 10 digits (without +91).</div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Flat / House / Building *</label>
+            <input type="text" name="house_building" id="chkModalHouse" class="form-control" placeholder="Flat / House No., Apartment name" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Street / Area / Landmark *</label>
+            <input type="text" name="street" id="chkModalStreet" class="form-control" placeholder="Street, Colony, Landmark" required>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label small fw-semibold">City *</label>
+              <input type="text" name="city" id="chkModalCity" class="form-control" placeholder="City" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-semibold">State *</label>
+              <input type="text" name="state" id="chkModalState" class="form-control" placeholder="State" required>
+            </div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-semibold">PIN Code (6 Digits) *</label>
+              <input type="text" name="pincode" id="chkModalPincode" class="form-control" placeholder="6-digit PIN code" required maxlength="6" pattern="[0-9]{6}" inputmode="numeric">
+              <div class="form-text text-muted small" style="font-size:0.75rem;">Must be exactly 6 digits.</div>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Address Type</label>
+              <select name="address_type" class="form-select">
+                <option value="home">Home (All Day)</option>
+                <option value="work">Work (10 AM - 6 PM)</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="is_default" value="true" id="checkIsDefault" checked>
+            <label class="form-check-label small" for="checkIsDefault">Save as default delivery address</label>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0 px-4 pb-4">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-cc btn-sm px-4">Save & Select Address</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function selectDeliveryAddress(addrId) {
+    const selectEl = document.querySelector('select[name="address"]');
+    if (selectEl) {
+      selectEl.value = addrId;
+    }
+    updateAddressCardsUI(addrId);
+  }
+
+  function updateAddressCardsUI(selectedId) {
+    const cards = document.querySelectorAll('.address-selection-card');
+    cards.forEach(card => {
+      const cardId = card.getAttribute('data-address-id');
+      const radio = document.getElementById('addr_radio_' + cardId);
+      const selBadge = card.querySelector('.selected-badge');
+      const defaultBadge = card.querySelector('.default-badge');
+
+      if (cardId === String(selectedId)) {
+        card.classList.add('border-success', 'border-2', 'shadow-sm');
+        card.style.background = '#f2f8f5';
+        if (radio) radio.checked = true;
+        if (selBadge) selBadge.classList.remove('d-none');
+      } else {
+        card.classList.remove('border-success', 'border-2', 'shadow-sm');
+        card.style.background = '#ffffff';
+        if (radio) radio.checked = false;
+        if (selBadge) selBadge.classList.add('d-none');
+      }
+    });
+  }
+
+  function validateCheckoutAddressModal(event) {
+    const alertBox = document.getElementById('checkoutAddressModalAlert');
+    const phoneInput = document.getElementById('chkModalPhone');
+    const pinInput = document.getElementById('chkModalPincode');
+    const nameInput = document.getElementById('chkModalName');
+    const errors = [];
+
+    const nameVal = (nameInput.value || '').trim();
+    if (!nameVal) errors.push('Please enter the recipient full name.');
+
+    const phoneVal = (phoneInput.value || '').trim().replace(/[\s\-\(\)\+]/g, '');
+    if (!phoneVal) {
+      errors.push('Contact mobile number is required.');
+      phoneInput.classList.add('is-invalid');
+    } else if (!/^\d{10}$/.test(phoneVal)) {
+      errors.push('Mobile number must be exactly 10 digits.');
+      phoneInput.classList.add('is-invalid');
+    } else {
+      phoneInput.classList.remove('is-invalid');
+      phoneInput.value = phoneVal; // clean formatted value
+    }
+
+    const pinVal = (pinInput.value || '').trim().replace(/\s+/g, '');
+    if (!pinVal) {
+      errors.push('PIN code is required.');
+      pinInput.classList.add('is-invalid');
+    } else if (!/^\d{6}$/.test(pinVal)) {
+      errors.push('PIN code must be exactly 6 digits.');
+      pinInput.classList.add('is-invalid');
+    } else {
+      pinInput.classList.remove('is-invalid');
+      pinInput.value = pinVal;
+    }
+
+    if (errors.length > 0) {
+      event.preventDefault();
+      alertBox.innerHTML = '<ul class="mb-0 ps-3">' + errors.map(e => `<li><i class="fa-solid fa-triangle-exclamation me-1"></i> ${e}</li>`).join('') + '</ul>';
+      alertBox.classList.remove('d-none');
+      return false;
+    }
+
+    alertBox.classList.add('d-none');
+    return true;
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const selectEl = document.querySelector('select[name="address"]');
+    if (selectEl) {
+      if (selectEl.value) {
+        updateAddressCardsUI(selectEl.value);
+      }
+      selectEl.addEventListener('change', function() {
+        updateAddressCardsUI(this.value);
+      });
+    }
+
+    // Input restrictions: allow only numbers
+    const phoneInput = document.getElementById('chkModalPhone');
+    if (phoneInput) {
+      phoneInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+      });
+    }
+    const pinInput = document.getElementById('chkModalPincode');
+    if (pinInput) {
+      pinInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+      });
+    }
+  });
+</script>
+{% endblock %}

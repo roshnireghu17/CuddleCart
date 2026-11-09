@@ -1,0 +1,105 @@
+{% extends "shop/admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}{% if product %}Edit {{ product.name }}{% else %}Add New Product{% endif %} — CuddleCart Admin{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+  <a href="{% url 'shop:admin_products' %}" class="small text-decoration-none" style="color:var(--cc-green);">&larr; Back to Products</a>
+  <h2 class="serif-heading mt-1" style="font-size:1.8rem;">
+    {% if product %}Edit Product: {{ product.name }}{% else %}Add New Soft Toy{% endif %}
+  </h2>
+</div>
+
+<div class="card-cc p-4 shadow-sm" style="max-width: 800px;">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    {% if form.errors %}
+      <div class="alert alert-danger py-2 px-3 small mb-3">
+        {% for field, errors in form.errors.items %}
+          <div><strong>{{ field|title }}:</strong> {{ errors|join:", " }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <label class="form-label small fw-bold text-muted">Product Name *</label>
+        {{ form.name }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label small fw-bold text-muted">Category *</label>
+        {{ form.category }}
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-4">
+        <label class="form-label small fw-bold text-muted">Brand *</label>
+        {{ form.brand }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small fw-bold text-muted">Size *</label>
+        {{ form.size }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small fw-bold text-muted">Age Group *</label>
+        {{ form.age_group }}
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <label class="form-label small fw-bold text-muted">Price (₹) *</label>
+        {{ form.price }}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label small fw-bold text-muted">Stock Quantity *</label>
+        {{ form.stock_quantity }}
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label small fw-bold text-muted">Description</label>
+      {{ form.description }}
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <label class="form-label small fw-bold text-muted">Upload Main Image *</label>
+        {{ form.image }}
+        {% if form.image.errors %}
+          <div class="text-danger small mt-1">{{ form.image.errors.0 }}</div>
+        {% endif %}
+        {% if product and product.image %}
+          <div class="mt-2 small text-muted">
+            Current file: <a href="{{ product.image.url }}" target="_blank">{{ product.image.name }}</a>
+          </div>
+        {% endif %}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label small fw-bold text-muted">Or Image URL</label>
+        {{ form.image_url }}
+        {% if form.image_url.errors %}
+          <div class="text-danger small mt-1">{{ form.image_url.errors.0 }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="form-check mb-4">
+      {{ form.is_active }}
+      <label class="form-check-label small text-muted" for="id_is_active">
+        Active (Visible and available for purchase in store)
+      </label>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-cc px-4">
+        <i class="fa-solid fa-floppy-disk me-1"></i> Save Product
+      </button>
+      <a href="{% url 'shop:admin_products' %}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

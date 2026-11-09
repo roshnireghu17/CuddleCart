@@ -1,0 +1,85 @@
+{% extends "shop/admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Gallery Images for {{ product.name }} — CuddleCart Admin{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+  <a href="{% url 'shop:admin_products' %}" class="small text-decoration-none" style="color:var(--cc-green);">&larr; Back to Products</a>
+  <h2 class="serif-heading mt-1" style="font-size:1.8rem;">
+    Gallery Images: {{ product.name }}
+  </h2>
+  <p class="text-muted small">Manage additional photo angles and gallery images for this soft toy.</p>
+</div>
+
+<div class="row g-4 mb-5">
+  <!-- Upload New Gallery Image -->
+  <div class="col-lg-5">
+    <div class="card-cc p-4 shadow-sm">
+      <h5 class="serif-heading mb-3 fs-5"><i class="fa-solid fa-cloud-arrow-up me-2 text-success"></i> Upload New Image</h5>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-muted">Upload Image File</label>
+          {{ form.image }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-muted">Or External Image URL</label>
+          {{ form.image_url }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-muted">Alt Text / Caption</label>
+          {{ form.alt_text }}
+        </div>
+        <button type="submit" class="btn btn-cc btn-sm w-100">
+          <i class="fa-solid fa-plus me-1"></i> Add to Gallery
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Existing Gallery Images -->
+  <div class="col-lg-7">
+    <div class="card-cc p-4 shadow-sm">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="serif-heading mb-0 fs-5">Existing Gallery Images</h5>
+        <span class="badge bg-light text-dark border">{{ images.count }} Image{{ images.count|pluralize }}</span>
+      </div>
+
+      <div class="row g-3">
+        <!-- Main Product Image -->
+        <div class="col-6 col-sm-4">
+          <div class="p-2 bg-light rounded border text-center">
+            <div class="product-img-wrap rounded overflow-hidden mb-2" style="aspect-ratio: 1/1; background: var(--cc-sand);">
+              <img src="{{ product.get_image }}" alt="Main Image" class="w-100 h-100 object-fit-cover">
+            </div>
+            <span class="badge bg-success small">Main Image</span>
+          </div>
+        </div>
+
+        <!-- Additional Images -->
+        {% for img in images %}
+        <div class="col-6 col-sm-4">
+          <div class="p-2 bg-light rounded border text-center">
+            <div class="product-img-wrap rounded overflow-hidden mb-2" style="aspect-ratio: 1/1; background: var(--cc-sand);">
+              <img src="{{ img.get_image }}" alt="{{ img.alt_text|default:'Gallery Image' }}" class="w-100 h-100 object-fit-cover">
+            </div>
+            <span class="small text-muted d-block text-truncate mb-1">{{ img.alt_text|default:"Gallery Photo" }}</span>
+            <form method="post" action="{% url 'shop:admin_product_image_delete' img.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.75rem;" data-confirm="Delete this gallery photo?">
+                <i class="fa-solid fa-trash-can me-1"></i> Delete
+              </button>
+            </form>
+          </div>
+        </div>
+        {% empty %}
+        <div class="col-12 py-3 text-center text-muted small">
+          No additional gallery images uploaded yet for this product.
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

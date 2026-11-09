@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Profile & Addresses — CuddleCart{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+      <h2 class="serif-heading mb-1">My Account & Addresses</h2>
+      <p class="text-muted small mb-0">Manage your profile details, password, and shipping destinations.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'shop:order_history' %}" class="btn btn-outline-cc btn-sm">
+        <i class="fa-solid fa-box-open me-1"></i> My Orders
+      </a>
+      <a href="{% url 'shop:wishlist_view' %}" class="btn btn-outline-cc btn-sm">
+        <i class="fa-solid fa-heart me-1"></i> My Wishlist
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-5">
+    <!-- Account Details Form -->
+    <div class="col-lg-5">
+      <div class="card-cc p-4 h-100 shadow-sm">
+        <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+          <div class="auth-emblem m-0" style="width: 52px; height: 52px; font-size: 1.3rem;">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <div>
+            <h5 class="serif-heading mb-0 text-dark">{{ user.username }}</h5>
+            <span class="small text-muted">{{ user.email }}</span>
+            <div class="small text-muted" style="font-size: 0.75rem;">
+              Member since: {{ user.created_at|date:"M d, Y" }}
+            </div>
+          </div>
+        </div>
+
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="update_profile" value="1">
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-bold text-muted">First Name</label>
+              {{ form.first_name }}
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold text-muted">Last Name</label>
+              {{ form.last_name }}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-muted">Email Address</label>
+            {{ form.email }}
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label small fw-bold text-muted">Phone Number</label>
+            {{ form.phone }}
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-cc">
+              <i class="fa-solid fa-check me-1"></i> Save Profile Changes
+            </button>
+            <a href="{% url 'shop:change_password' %}" class="btn btn-outline-secondary btn-sm">
+              <i class="fa-solid fa-key me-1"></i> Change Password
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delivery Addresses Section -->
+    <div class="col-lg-7">
+      <!-- Saved Addresses List -->
+      <div class="card-cc p-4 mb-4 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="serif-heading mb-0 fs-5"><i class="fa-solid fa-location-dot me-2 text-danger"></i> Saved Delivery Addresses</h5>
+          <span class="badge bg-light text-muted border">{{ addresses.count }} Saved</span>
+        </div>
+
+        {% for addr in addresses %}
+          <div class="p-3 bg-light rounded mb-3 border {% if addr.is_default %}border-success{% endif %}">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <strong class="text-dark">{{ addr.full_name|default:user.username }}</strong>
+                  <span class="badge bg-secondary-subtle text-secondary text-uppercase" style="font-size: 0.68rem;">{{ addr.get_address_type_display }}</span>
+                  {% if addr.is_default %}
+                    <span class="badge bg-success-subtle text-success border border-success" style="font-size: 0.68rem;">Default Address</span>
+                  {% endif %}
+                </div>
+                <div class="small text-muted">
+                  {% if addr.house_building %}{{ addr.house_building }}, {% endif %}
+                  {% if addr.street %}{{ addr.street }}, {% endif %}
+                  {{ addr.city }}, {{ addr.state }} - {{ addr.pincode }} ({{ addr.country }})
+                </div>
+                <div class="small text-muted mt-1">
+                  <i class="fa-solid fa-phone me-1"></i> {{ addr.phone|default:user.phone|default:"No phone" }}
+                </div>
+              </div>
+
+              <div class="d-flex gap-2">
+                {% if not addr.is_default %}
+                  <a href="{% url 'shop:set_default_address' addr.id %}" class="btn btn-sm btn-outline-success py-0 px-2" style="font-size: 0.75rem;" title="Set as default">
+                    Make Default
+                  </a>
+                {% endif %}
+                <a href="{% url 'shop:edit_address' addr.id %}" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.75rem;" title="Edit Address">
+                  <i class="fa-solid fa-pen"></i>
+                </a>
+                <a href="{% url 'shop:delete_address' addr.id %}" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.75rem;" title="Delete Address" data-confirm="Delete this address?">
+                  <i class="fa-solid fa-trash-can"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="p-3 bg-light rounded text-center text-muted small">
+            No delivery addresses saved yet. Add your address below!
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Add New Address Card -->
+      <div class="card-cc p-4 shadow-sm">
+        <h5 class="serif-heading mb-3 fs-5"><i class="fa-solid fa-plus me-1 text-success"></i> Add New Address</h5>
+        <form method="post" action="{% url 'shop:add_address' %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{% url 'shop:profile' %}">
+          
+          <div class="row g-2 mb-2">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-muted">Full Name</label>
+              {{ address_form.full_name }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-muted">Phone Number</label>
+              {{ address_form.phone }}
+            </div>
+          </div>
+
+          <div class="row g-2 mb-2">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-muted">Flat / House No. / Building</label>
+              {{ address_form.house_building }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-muted">Street / Area / Landmark</label>
+              {{ address_form.street }}
+            </div>
+          </div>
+
+          <div class="row g-2 mb-2">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-muted">City / Town</label>
+              {{ address_form.city }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-muted">State</label>
+              {{ address_form.state }}
+            </div>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-md-4">
+              <label class="form-label small fw-bold text-muted">PIN Code</label>
+              {{ address_form.pincode }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold text-muted">Country</label>
+              {{ address_form.country }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold text-muted">Address Type</label>
+              {{ address_form.address_type }}
+            </div>
+          </div>
+
+          <div class="form-check mb-3">
+            {{ address_form.is_default }}
+            <label class="form-check-label small text-muted" for="id_is_default">
+              Set as default delivery address
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-cc btn-sm px-4">
+            <i class="fa-solid fa-floppy-disk me-1"></i> Save Address
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

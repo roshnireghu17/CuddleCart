@@ -1,0 +1,84 @@
+{% load static %}
+{% if not user.is_authenticated %}
+  <!-- Guest: Sign in required to shop / add to cart -->
+  <div class="text-center my-auto py-5">
+    <div class="empty-cart-icon mb-3">
+      <i class="fa-solid fa-shield-heart fa-3x" style="color:var(--cc-green);"></i>
+    </div>
+    <h5 class="serif-heading mb-2">Sign In Required</h5>
+    <p class="small text-muted mb-4">
+      Please sign in or create an account to start shopping, build your cuddle bag, and enjoy exclusive member perks.
+    </p>
+    <div class="d-flex flex-column gap-2" style="max-width: 280px; margin: 0 auto;">
+      <button type="button" class="btn btn-cc w-100" data-bs-dismiss="offcanvas" onclick="promptLoginRequired()">
+        <i class="fa-solid fa-arrow-right-to-bracket me-2"></i> Sign In to Shop
+      </button>
+      <a href="{% url 'shop:register' %}" class="btn btn-outline-cc w-100" data-bs-dismiss="offcanvas">
+        <i class="fa-solid fa-user-plus me-2"></i> Create an Account
+      </a>
+    </div>
+  </div>
+{% elif nav_cart and nav_cart.items.all %}
+  <!-- Free Shipping Progress Indicator (Threshold ₹600) -->
+  <div class="cart-free-shipping-box mb-3 p-3 rounded-3" style="background:var(--cc-cream-light); border:1px solid var(--cc-border);">
+    <div class="d-flex justify-content-between small fw-semibold mb-1">
+      <span><i class="fa-solid fa-truck-fast text-success me-1"></i> Free Gift Wrap & Delivery</span>
+      <span>{% if nav_cart_total >= 600 %}Unlocked! 🎉{% else %}₹{{ nav_cart_total|default:"0" }} / ₹600{% endif %}</span>
+    </div>
+    <div class="progress" style="height: 6px;">
+      <div class="progress-bar bg-success cart-shipping-progress" role="progressbar" data-progress="{% widthratio nav_cart_total|default:0 600 100 %}" aria-valuenow="{% widthratio nav_cart_total|default:0 600 100 %}" aria-valuemin="0" aria-valuemax="100" style="width: {% widthratio nav_cart_total|default:0 600 100 %}%;"></div>
+    </div>
+  </div>
+
+  <!-- Items list -->
+  <div class="cart-items-list flex-grow-1 overflow-auto pe-1">
+    {% for item in nav_cart.items.all %}
+      <div class="cart-drawer-item d-flex align-items-center gap-3 py-3 border-bottom" data-item-id="{{ item.id }}">
+        <div class="cart-item-img-wrap rounded-3 overflow-hidden" style="width:54px; height:54px; background:var(--cc-sand); flex-shrink:0;">
+          {% if item.product.get_image %}
+            <img src="{{ item.product.get_image }}" alt="{{ item.product.name }}" class="w-100 h-100 object-fit-cover">
+          {% else %}
+            <img src="{% static 'shop/img/barnaby_bear.jpg' %}" alt="{{ item.product.name }}" class="w-100 h-100 object-fit-cover">
+          {% endif %}
+        </div>
+        <div class="flex-grow-1 min-w-0">
+          <h6 class="mb-1 text-truncate fw-bold text-dark" style="font-size:0.95rem;">{{ item.product.name }}</h6>
+          <div class="d-flex align-items-center justify-content-between small">
+            <span class="text-muted">Qty: {{ item.quantity }} &times; ₹{{ item.get_unit_price }}</span>
+            <span class="fw-bold" style="color:var(--cc-gold-dark);">₹{{ item.get_subtotal }}</span>
+          </div>
+        </div>
+        <a href="{% url 'shop:remove_cart_item' item.id %}" class="btn btn-sm text-muted p-1 cart-drawer-remove-btn" title="Remove item" onclick="handleDrawerRemoveItem(event, '{{ item.id }}', '{% url 'shop:remove_cart_item' item.id %}')">
+          <i class="fa-solid fa-xmark"></i>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Drawer Footer -->
+  <div class="cart-drawer-footer border-top pt-3 mt-auto">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="fw-semibold text-muted">Subtotal:</span>
+      <span class="fs-5 fw-bold" style="color:var(--cc-green-dark);">₹{{ nav_cart_total }}</span>
+    </div>
+    <a href="{% url 'shop:checkout' %}" class="btn btn-cc w-100 py-2 mb-2">
+      <span>Proceed to Checkout</span>
+      <i class="fa-solid fa-arrow-right ms-2"></i>
+    </a>
+    <a href="{% url 'shop:cart_view' %}" class="btn btn-outline-cc w-100 py-2">
+      View Full Bag & Edit
+    </a>
+  </div>
+{% else %}
+  <!-- Empty Bag State -->
+  <div class="text-center my-auto py-5">
+    <div class="empty-cart-icon mb-3">
+      <i class="fa-solid fa-basket-shopping fa-3x text-muted opacity-50"></i>
+    </div>
+    <h5 class="serif-heading mb-2">Your Bag is Empty</h5>
+    <p class="small text-muted mb-4">You haven't added any soft companions yet. Discover handcrafted friends ready for cuddles!</p>
+    <a href="{% url 'shop:product_list' %}" class="btn btn-cc" data-bs-dismiss="offcanvas">
+      Discover Companions &rarr;
+    </a>
+  </div>
+{% endif %}

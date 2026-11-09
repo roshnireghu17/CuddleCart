@@ -1,0 +1,116 @@
+{% extends "shop/admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Manage Order #{{ order.id }} — CuddleCart Admin{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+  <a href="{% url 'shop:admin_orders' %}" class="small" style="color:var(--cc-green);">&larr; Back to Orders Queue</a>
+  <div class="d-flex flex-wrap justify-content-between align-items-center mt-1">
+    <h2 class="serif-heading mb-0" style="font-size:1.8rem;">Manage Order #{{ order.id }}</h2>
+    <span class="badge-status badge-status-{{ order.status }} px-3 py-2" style="font-size:0.9rem;">
+      {{ order.get_status_display }}
+    </span>
+  </div>
+</div>
+
+<div class="row g-4 mb-5">
+  <div class="col-lg-8">
+    <!-- Items Purchased -->
+    <div class="card-cc p-4 mb-4">
+      <h5 class="serif-heading mb-3">Order Items</h5>
+      <div class="table-responsive">
+        <table class="table table-cc align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Unit Price</th>
+              <th>Quantity</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in order.items.all %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="product-img-wrap rounded" style="width:40px; height:40px;">
+                    {% if item.product.get_image %}
+                      <img src="{{ item.product.get_image }}" alt="{{ item.product.name }}">
+                    {% else %}
+                      <img src="{% static 'shop/img/barnaby_bear.jpg' %}" alt="{{ item.product.name }}">
+                    {% endif %}
+                  </div>
+                  <span class="fw-semibold">{{ item.product.name }}</span>
+                </div>
+              </td>
+              <td>₹{{ item.price_at_purchase }}</td>
+              <td>{{ item.quantity }}</td>
+              <td class="fw-bold" style="color:var(--cc-gold-dark);">₹{{ item.get_subtotal }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="text-end pt-3">
+        <span class="text-muted small me-2">Grand Total:</span>
+        <span class="serif-heading" style="font-size:1.4rem; color:var(--cc-green-dark);">₹{{ order.total_amount }}</span>
+      </div>
+    </div>
+
+    <!-- Customer & Shipping -->
+    <div class="card-cc p-4">
+      <h5 class="serif-heading mb-3">Customer & Delivery Info</h5>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="small text-muted fw-bold d-block">Customer</label>
+          <div>{{ order.user.username }} ({{ order.user.email }})</div>
+          <div class="text-muted small">Phone: {{ order.user.phone|default:"Not provided" }}</div>
+        </div>
+        <div class="col-md-6">
+          <label class="small text-muted fw-bold d-block">Shipping Address</label>
+          <div class="small">
+            {{ order.address.address_line }}<br>
+            {{ order.address.city }}, {{ order.address.state }} {{ order.address.pincode }}<br>
+            {{ order.address.country }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Update Status Form -->
+  <div class="col-lg-4">
+    <div class="card-cc p-4 mb-4">
+      <h5 class="serif-heading mb-3">Update Order Status</h5>
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Order Fulfillment State</label>
+          {{ form.status }}
+        </div>
+        <button type="submit" class="btn btn-cc w-100">
+          <i class="fa-solid fa-rotate me-1"></i> Update Status
+        </button>
+      </form>
+    </div>
+
+    <!-- Payment info -->
+    <div class="card-cc p-4">
+      <h5 class="serif-heading mb-3">Payment Record</h5>
+      <div class="d-flex justify-content-between mb-2 small text-muted">
+        <span>Channel</span>
+        <span class="text-uppercase fw-semibold">{{ order.payment.payment_method|default:"CARD" }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-2 small text-muted">
+        <span>Payment Status</span>
+        <span class="badge bg-success text-white">{{ order.payment.status|default:"Success" }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-2 small text-muted">
+        <span>Txn ID</span>
+        <span class="font-monospace">{{ order.payment.transaction_id|default:"-" }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

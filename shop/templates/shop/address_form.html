@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Edit Delivery Address — CuddleCart{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 640px;">
+  <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+      <h2 class="serif-heading mb-1">Edit Address</h2>
+      <p class="text-muted small mb-0">Update delivery destination details.</p>
+    </div>
+    <a href="{% url 'shop:profile' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="fa-solid fa-arrow-left me-1"></i> Back to Profile
+    </a>
+  </div>
+
+  <div class="card-cc p-4 shadow-sm">
+    {% if form.errors %}
+      <div class="alert alert-danger py-2 px-3 small mb-3">
+        {% for field in form %}
+          {% for error in field.errors %}
+            <div><i class="fa-solid fa-triangle-exclamation me-1"></i> <strong>{{ field.label }}:</strong> {{ error }}</div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-bold text-muted">Full Recipient Name</label>
+          {{ form.full_name }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold text-muted">Phone Number</label>
+          {{ form.phone }}
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-bold text-muted">Flat / House / Building</label>
+          {{ form.house_building }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold text-muted">Street / Landmark</label>
+          {{ form.street }}
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-bold text-muted">City</label>
+          {{ form.city }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold text-muted">State</label>
+          {{ form.state }}
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label class="form-label small fw-bold text-muted">PIN Code</label>
+          {{ form.pincode }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small fw-bold text-muted">Country</label>
+          {{ form.country }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small fw-bold text-muted">Address Type</label>
+          {{ form.address_type }}
+        </div>
+      </div>
+
+      <div class="form-check mb-4">
+        {{ form.is_default }}
+        <label class="form-check-label small" for="id_is_default">
+          Set as default delivery address
+        </label>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2">
+        <a href="{% url 'shop:profile' %}" class="btn btn-outline-secondary btn-sm px-3">Cancel</a>
+        <button type="submit" class="btn btn-cc btn-sm px-4">
+          <i class="fa-solid fa-floppy-disk me-1"></i> Update Address
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

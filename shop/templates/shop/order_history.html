@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Orders — CuddleCart{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Breadcrumb & Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1 small">
+          <li class="breadcrumb-item"><a href="{% url 'shop:home' %}" class="text-decoration-none" style="color:var(--cc-green);"><i class="fa-solid fa-house-chimney me-1"></i> Home</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'shop:user_dashboard' %}" class="text-decoration-none" style="color:var(--cc-green);">Sanctuary</a></li>
+          <li class="breadcrumb-item active" aria-current="page">My Orders</li>
+        </ol>
+      </nav>
+      <h1 class="serif-heading mb-1" style="font-size: 2rem;">My Companion Orders</h1>
+      <p class="text-muted small mb-0">Track shipments, view previous nursery adoptions, and manage your orders.</p>
+    </div>
+    {% if orders %}
+      <div class="mt-2 mt-sm-0">
+        <span class="badge px-3 py-2 rounded-pill font-monospace" style="background: var(--cc-cream-light); color: var(--cc-green-dark); border: 1px solid var(--cc-border);">
+          <i class="fa-solid fa-box-archive text-success me-1"></i> {{ orders|length }} total order{{ orders|length|pluralize }}
+        </span>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if orders %}
+  <div class="row g-4 mb-5">
+    {% for order in orders %}
+    <div class="col-12">
+      <div class="card-cc p-4 shadow-sm" style="border-radius: var(--cc-radius-lg); background: #ffffff;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-3 border-bottom">
+          <div>
+            <span class="fw-bold me-2 fs-5" style="color: var(--cc-green-dark);">Order #{{ order.id }}</span>
+            <span class="text-muted small">&middot; {{ order.order_date|date:"F d, Y, h:i A" }}</span>
+          </div>
+          <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
+            <!-- Order Status Badge -->
+            {% if order.status == 'delivered' %}
+              <span class="badge bg-success px-3 py-2 rounded-pill"><i class="fa-solid fa-circle-check me-1"></i> Delivered</span>
+            {% elif order.status == 'cancelled' %}
+              <span class="badge bg-danger px-3 py-2 rounded-pill"><i class="fa-solid fa-circle-xmark me-1"></i> Cancelled</span>
+            {% elif order.status == 'shipped' %}
+              <span class="badge bg-info text-dark px-3 py-2 rounded-pill"><i class="fa-solid fa-truck-fast me-1"></i> Shipped</span>
+            {% elif order.status == 'processing' %}
+              <span class="badge bg-primary px-3 py-2 rounded-pill"><i class="fa-solid fa-gear me-1"></i> Processing</span>
+            {% elif order.status == 'confirmed' %}
+              <span class="badge bg-success-subtle text-success border border-success px-3 py-2 rounded-pill"><i class="fa-solid fa-check me-1"></i> Confirmed</span>
+            {% else %}
+              <span class="badge bg-warning text-dark px-3 py-2 rounded-pill"><i class="fa-solid fa-clock me-1"></i> Pending</span>
+            {% endif %}
+
+            <!-- Payment Status Badge -->
+            {% if order.payment.status == 'success' %}
+              <span class="badge bg-success-subtle text-success border border-success small rounded-pill px-2 py-1"><i class="fa-solid fa-shield-check me-1"></i> Paid</span>
+            {% elif order.payment.status == 'refunded' %}
+              <span class="badge bg-secondary small rounded-pill px-2 py-1">Refunded</span>
+            {% else %}
+              <span class="badge bg-light text-muted border small rounded-pill px-2 py-1">Payment: {{ order.payment.get_status_display|default:"Pending" }}</span>
+            {% endif %}
+
+            <a href="{% url 'shop:order_detail' order.id %}" class="btn btn-sm btn-outline-cc ms-2">
+              View Order <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="row align-items-center g-3">
+          <div class="col-md-8">
+            <div class="d-flex flex-wrap gap-2">
+              {% for item in order.items.all %}
+              <div class="d-flex align-items-center gap-2 bg-light p-2 rounded-3 border" style="max-width: 280px;">
+                <div class="product-img-wrap rounded-2 overflow-hidden" style="width: 48px; height: 48px; flex-shrink: 0; background: var(--cc-sand);">
+                  {% if item.product.get_image %}
+                    <img src="{{ item.product.get_image }}" alt="{{ item.product.name }}" class="w-100 h-100 object-fit-cover">
+                  {% else %}
+                    <img src="{% static 'shop/img/barnaby_bear.jpg' %}" alt="{{ item.product.name }}" class="w-100 h-100 object-fit-cover">
+                  {% endif %}
+                </div>
+                <div class="text-truncate">
+                  <span class="small fw-semibold d-block text-truncate" style="color: var(--cc-green-dark);">{{ item.product_name|default:item.product.name }}</span>
+                  <span class="text-muted small">{{ item.quantity }} &times; ₹{{ item.price_at_purchase }}</span>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="col-md-4 text-md-end">
+            <span class="text-muted small d-block">Total Amount</span>
+            <span class="serif-heading fs-4" style="color: var(--cc-green-dark); font-weight: 700;">₹{{ order.total_amount }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card-cc p-5 text-center my-4 shadow-sm" style="border-radius: var(--cc-radius-lg); background: #ffffff;">
+    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px; background: var(--cc-cream-light); color: var(--cc-green);">
+      <i class="fa-solid fa-box-archive fa-2x"></i>
+    </div>
+    <h3 class="serif-heading mb-2">No Companion Orders Yet</h3>
+    <p class="text-muted mb-4" style="max-width: 450px; margin: 0 auto;">
+      You haven't placed any soft toy orders yet. Browse our curated collection to adopt your very first cuddle companion!
+    </p>
+    <a href="{% url 'shop:product_list' %}" class="btn btn-cc px-4 py-2">
+      <i class="fa-solid fa-bag-shopping me-2"></i> Browse Companions
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

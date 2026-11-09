@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Sanctuary Dashboard — CuddleCart{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- 1. Dashboard Hero Welcome Banner -->
+  <section class="dashboard-hero-banner position-relative rounded-4 overflow-hidden mb-4 shadow-sm" style="background: linear-gradient(135deg, #173A32 0%, #214E43 65%, #2B6255 100%); min-height: 200px;">
+    <div class="p-4 p-md-5 text-white position-relative z-2">
+      <div class="d-inline-flex align-items-center gap-2 promo-pill-tag mb-2" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: #FAF7F2; padding: 4px 14px; border-radius: 50px; font-size: 0.8rem; font-weight: 600;">
+        <i class="fa-solid fa-sparkles text-warning"></i> <span>Family Member Sanctuary</span>
+      </div>
+      <h1 class="serif-heading mb-2 text-white" style="font-size: 2.2rem;">Welcome back, {{ user.first_name|default:user.username }}!</h1>
+      <p class="text-white-50 mb-0" style="max-width: 600px; font-size: 0.95rem;">
+        Your cherished companions and orders are ready. Discover handcrafted plushies and manage your nursery family account.
+      </p>
+    </div>
+  </section>
+
+  <!-- 2. Account Quick Stats Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="card-cc p-3 shadow-sm d-flex align-items-center gap-3" style="border-radius: var(--cc-radius); background: #ffffff;">
+        <div class="p-3 rounded-circle" style="background: var(--cc-green-light); color: var(--cc-green); font-size: 1.25rem;">
+          <i class="fa-solid fa-box-open"></i>
+        </div>
+        <div>
+          <span class="small text-muted d-block">My Orders</span>
+          <h4 class="mb-0 fw-bold" style="color: var(--cc-green-dark);">{{ recent_orders|length|default:user.orders.count }}</h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="card-cc p-3 shadow-sm d-flex align-items-center gap-3" style="border-radius: var(--cc-radius); background: #ffffff;">
+        <div class="p-3 rounded-circle" style="background: #FFEBEA; color: #DC3545; font-size: 1.25rem;">
+          <i class="fa-solid fa-heart"></i>
+        </div>
+        <div>
+          <span class="small text-muted d-block">Saved Wishlist</span>
+          <h4 class="mb-0 fw-bold" style="color: var(--cc-green-dark);">{{ nav_wishlist_count|default:"0" }}</h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="card-cc p-3 shadow-sm d-flex align-items-center gap-3" style="border-radius: var(--cc-radius); background: #ffffff;">
+        <div class="p-3 rounded-circle" style="background: var(--cc-cream-light); color: var(--cc-gold-dark); font-size: 1.25rem;">
+          <i class="fa-solid fa-bag-shopping"></i>
+        </div>
+        <div>
+          <span class="small text-muted d-block">Cart Items</span>
+          <h4 class="mb-0 fw-bold" style="color: var(--cc-green-dark);">{{ nav_cart_count|default:"0" }}</h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="card-cc p-3 shadow-sm d-flex align-items-center gap-3" style="border-radius: var(--cc-radius); background: #ffffff;">
+        <div class="p-3 rounded-circle" style="background: #E8F4EC; color: #198754; font-size: 1.25rem;">
+          <i class="fa-solid fa-location-dot"></i>
+        </div>
+        <div>
+          <span class="small text-muted d-block">Saved Addresses</span>
+          <h4 class="mb-0 fw-bold" style="color: var(--cc-green-dark);">{{ addresses_count|default:"0" }}</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2.5 Category Explorer & Quick Sorting Section (Moved from Navbar & Home with Good Posture) -->
+  <section class="card-cc p-4 mb-5 shadow-sm" style="border-radius: var(--cc-radius-lg); background: #ffffff; border: 1px solid var(--cc-border);">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
+      <div>
+        <span class="badge-tag-warm mb-1 d-inline-block"><i class="fa-solid fa-shapes me-1"></i> Quick Companion Navigator</span>
+        <h3 class="serif-heading mb-0" style="font-size: 1.4rem; color: var(--cc-green-dark);">
+          Explore Soft Toy Categories
+        </h3>
+      </div>
+      <a href="{% url 'shop:categories_overview' %}" class="small fw-semibold text-decoration-none" style="color: var(--cc-green);">
+        View Detailed Guide &rarr;
+      </a>
+    </div>
+
+    <!-- 4 Category Quick Launch Tiles -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <a href="{% url 'shop:product_list' %}?q=Bear" class="p-3 rounded-3 text-decoration-none d-flex align-items-center gap-3 border h-100 transition-transform" style="background: var(--cc-cream-light); color: var(--cc-green-dark);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: white; color: var(--cc-gold-dark); font-size: 1.3rem; flex-shrink: 0;">
+            <i class="fa-solid fa-paw"></i>
+          </div>
+          <div>
+            <strong class="d-block" style="font-size: 0.95rem;">Teddy Bears</strong>
+            <span class="small text-muted">Classic huggers</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <a href="{% url 'shop:product_list' %}?category=2" class="p-3 rounded-3 text-decoration-none d-flex align-items-center gap-3 border h-100 transition-transform" style="background: #FFF5F5; color: var(--cc-green-dark);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: white; color: #DC3545; font-size: 1.3rem; flex-shrink: 0;">
+            <i class="fa-solid fa-heart"></i>
+          </div>
+          <div>
+            <strong class="d-block" style="font-size: 0.95rem;">Plushies</strong>
+            <span class="small text-muted">Bunnies & pals</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <a href="{% url 'shop:product_list' %}?q=Baby" class="p-3 rounded-3 text-decoration-none d-flex align-items-center gap-3 border h-100 transition-transform" style="background: #F0F9F4; color: var(--cc-green-dark);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: white; color: var(--cc-green); font-size: 1.3rem; flex-shrink: 0;">
+            <i class="fa-solid fa-baby"></i>
+          </div>
+          <div>
+            <strong class="d-block" style="font-size: 0.95rem;">Baby Soft Toys</strong>
+            <span class="small text-muted">0+ Newborn safe</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <a href="{% url 'shop:product_list' %}?q=Gift" class="p-3 rounded-3 text-decoration-none d-flex align-items-center gap-3 border h-100 transition-transform" style="background: #FBF7EE; color: var(--cc-green-dark);">
+          <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: white; color: var(--cc-gold-dark); font-size: 1.3rem; flex-shrink: 0;">
+            <i class="fa-solid fa-gift"></i>
+          </div>
+          <div>
+            <strong class="d-block" style="font-size: 0.95rem;">Gift Sets</strong>
+            <span class="small text-muted">Milestone boxes</span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Clean Quick Sorting Bar with Good Posture -->
+    <div class="p-3 rounded-3 bg-light border d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fa-solid fa-arrow-down-short-wide text-success"></i>
+        <span class="small fw-bold text-dark">Quick Catalog Sorting:</span>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'shop:product_list' %}?sort=newest" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 small">
+          Newest Arrivals
+        </a>
+        <a href="{% url 'shop:product_list' %}?sort=price_low" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 small">
+          Price: Low to High
+        </a>
+        <a href="{% url 'shop:product_list' %}?sort=price_high" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 small">
+          Price: High to Low
+        </a>
+        <a href="{% url 'shop:product_list' %}?sort=rating" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 small">
+          Top Rated ★
+        </a>
+        <a href="{% url 'shop:product_list' %}?in_stock=1" class="btn btn-sm btn-outline-success rounded-pill py-1 px-3 small">
+          In Stock Only
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Quick Account Navigation -->
+  <section class="mb-5">
+    <div class="row g-3">
+      <div class="col-md-3 col-6">
+        <a href="{% url 'shop:product_list' %}" class="card-cc p-3 text-center text-decoration-none shadow-sm d-block h-100 transition-transform" style="border-radius: var(--cc-radius); background: #ffffff;">
+          <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 48px; height: 48px; background: var(--cc-green-light); color: var(--cc-green);">
+            <i class="fa-solid fa-shapes fs-5"></i>
+          </div>
+          <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.95rem;">Browse Collection</h6>
+          <span class="small text-muted">All Handcrafted Toys</span>
+        </a>
+      </div>
+
+      <div class="col-md-3 col-6">
+        <a href="{% url 'shop:order_history' %}" class="card-cc p-3 text-center text-decoration-none shadow-sm d-block h-100 transition-transform" style="border-radius: var(--cc-radius); background: #ffffff;">
+          <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 48px; height: 48px; background: #FFF5E6; color: var(--cc-gold-dark);">
+            <i class="fa-solid fa-box-open fs-5"></i>
+          </div>
+          <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.95rem;">Order History</h6>
+          <span class="small text-muted">Track Deliveries</span>
+        </a>
+      </div>
+
+      <div class="col-md-3 col-6">
+        <a href="{% url 'shop:wishlist_view' %}" class="card-cc p-3 text-center text-decoration-none shadow-sm d-block h-100 transition-transform" style="border-radius: var(--cc-radius); background: #ffffff;">
+          <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 48px; height: 48px; background: #FFEBEA; color: #DC3545;">
+            <i class="fa-solid fa-heart fs-5"></i>
+          </div>
+          <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.95rem;">My Wishlist</h6>
+          <span class="small text-muted">Saved Companions</span>
+        </a>
+      </div>
+
+      <div class="col-md-3 col-6">
+        <a href="{% url 'shop:profile' %}" class="card-cc p-3 text-center text-decoration-none shadow-sm d-block h-100 transition-transform" style="border-radius: var(--cc-radius); background: #ffffff;">
+          <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 48px; height: 48px; background: #E8F4EC; color: #198754;">
+            <i class="fa-solid fa-location-dot fs-5"></i>
+          </div>
+          <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.95rem;">Addresses & Profile</h6>
+          <span class="small text-muted">Manage Account</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Recent Order History Section -->
+  <section class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 class="serif-heading mb-0" style="font-size:1.3rem;">Recent Orders</h4>
+      {% if recent_orders %}
+      <a href="{% url 'shop:order_history' %}" class="small text-muted fw-semibold">View all orders &rarr;</a>
+      {% endif %}
+    </div>
+    {% if recent_orders %}
+    <div class="row g-3">
+      {% for order in recent_orders %}
+      <div class="col-md-6">
+        <div class="card-cc p-3 shadow-sm d-flex justify-content-between align-items-center" style="border-radius: var(--cc-radius); background: #ffffff;">
+          <div>
+            <span class="small text-muted d-block">Order #{{ order.id }} &middot; {{ order.order_date|date:"M d, Y" }}</span>
+            <span class="fw-bold fs-5" style="color:var(--cc-green-dark);">₹{{ order.total_amount }}</span>
+          </div>
+          <div class="text-end">
+            <span class="badge-status badge-status-{{ order.status }} mb-1 d-inline-block">{{ order.get_status_display }}</span>
+            <div><a href="{% url 'shop:order_detail' order.id %}" class="small fw-semibold" style="color:var(--cc-green);">Details &rarr;</a></div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="card-cc p-4 text-center bg-light border shadow-sm" style="border-radius: var(--cc-radius);">
+      <div class="mb-2 text-muted" style="font-size: 2rem;"><i class="fa-solid fa-box-open"></i></div>
+      <h6 class="fw-bold mb-1 text-dark">No orders yet</h6>
+      <p class="text-muted small mb-3">When you adopt toys from CuddleCart, your order details and delivery status will appear here.</p>
+      <a href="{% url 'shop:product_list' %}" class="btn btn-cc btn-sm px-4">Browse Companions</a>
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

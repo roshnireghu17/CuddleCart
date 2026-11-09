@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}About Us — CuddleCart &middot; Cherished Friends, Forever Loved{% endblock %}
+
+{% block content %}
+<!-- About Hero Showcase -->
+<section class="about-hero-section position-relative py-5" style="background: linear-gradient(135deg, #173A32 0%, #214E43 65%, #2B6255 100%); color: white;">
+  <div class="container py-4 text-center">
+    <span class="badge-tag-gold mb-3 d-inline-block px-3 py-1">
+      <i class="fa-solid fa-heart me-1"></i> The CuddleCart Story
+    </span>
+    <h1 class="serif-heading mb-3" style="font-size: 2.8rem; color: #FAF7F2;">
+      Cherished Companions,<br>Crafted for Lifelong Memories
+    </h1>
+    <p class="mx-auto text-white-50 lead" style="max-width: 680px; font-size: 1.15rem; line-height: 1.7;">
+      At CuddleCart, we believe every child deserves a gentle first friend—handcrafted from pure organic fibers, free from harsh chemicals, and filled with timeless warmth.
+    </p>
+  </div>
+</section>
+
+<!-- Our Mission & Philosophy -->
+<section class="py-5" style="background: #ffffff;">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <span class="badge-tag-warm mb-2"><i class="fa-solid fa-sparkles me-1"></i> Our Origin</span>
+        <h2 class="serif-heading mb-3" style="color: var(--cc-green-dark); font-size: 2.2rem;">
+          How CuddleCart Was Born
+        </h2>
+        <p class="text-muted" style="line-height: 1.75; font-size: 1.02rem;">
+          CuddleCart began with a simple, tender desire: to create nursery companions that parents could trust unconditionally. When looking for plush toys for our own little ones, we noticed too many synthetic fibers, plastic beads that posed choking risks, and impersonal mass manufacturing.
+        </p>
+        <p class="text-muted" style="line-height: 1.75; font-size: 1.02rem;">
+          We envisioned a different world. A sanctuary where soft toys are hand-stitched by skilled artisans, stuffed with hypoallergenic organic cotton batting, and finished with delicate hand-embroidered features that never fray or peel.
+        </p>
+        <div class="row g-3 pt-2">
+          <div class="col-6">
+            <div class="p-3 rounded-3 bg-light border">
+              <h4 class="fw-bold mb-1" style="color: var(--cc-green-dark);">100% GOTS</h4>
+              <span class="small text-muted">Certified Organic Cotton</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-3 rounded-3 bg-light border">
+              <h4 class="fw-bold mb-1" style="color: var(--cc-green-dark);">0+ Months</h4>
+              <span class="small text-muted">Infant Safe Certified</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="p-3 rounded-4 shadow-sm position-relative overflow-hidden" style="background: var(--cc-sand);">
+          <img src="{% static 'shop/img/hero_child.jpg' %}" alt="Child hugging a soft CuddleCart toy" class="w-100 rounded-3 object-fit-cover shadow-sm" style="max-height: 420px;">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- The 4 Quality Pillars -->
+<section class="py-5" style="background: var(--cc-cream-light);">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="badge-tag-warm mb-2"><i class="fa-solid fa-shield-halved me-1"></i> Uncompromising Standard</span>
+      <h2 class="serif-heading" style="color: var(--cc-green-dark);">Why Families Cherish CuddleCart</h2>
+      <p class="text-muted" style="max-width: 580px; margin: 0 auto;">
+        From yarn to adoption passport, every touchpoint is designed with love, care, and safety in mind.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-3">
+        <div class="card-cc p-4 h-100 text-center shadow-sm" style="border-radius: var(--cc-radius); background: #ffffff;">
+          <div class="p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; background: var(--cc-green-light); color: var(--cc-green); font-size: 1.5rem;">
+            <i class="fa-solid fa-leaf"></i>
+          </div>
+          <h5 class="fw-bold mb-2" style="color: var(--cc-green-dark);">Pure Organic Yarns</h5>
+          <p class="small text-muted mb-0">Naturally dyed with baby-safe mineral pigments and free from harmful bleaches, phthalates, or microplastics.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="card-cc p-4 h-100 text-center shadow-sm" style="border-radius: var(--cc-radius); background: #ffffff;">
+          <div class="p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; background: #FFEBEA; color: #DC3545; font-size: 1.5rem;">
+            <i class="fa-solid fa-shield-heart"></i>
+          </div>
+          <h5 class="fw-bold mb-2" style="color: var(--cc-green-dark);">100% Choke-Safe</h5>
+          <p class="small text-muted mb-0">No plastic glass eyes or detachable parts. All facial details are meticulously hand-embroidered by artisan stitchers.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="card-cc p-4 h-100 text-center shadow-sm" style="border-radius: var(--cc-radius); background: #ffffff;">
+          <div class="p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; background: var(--cc-cream-light); color: var(--cc-gold-dark); font-size: 1.5rem;">
+            <i class="fa-solid fa-gift"></i>
+          </div>
+          <h5 class="fw-bold mb-2" style="color: var(--cc-green-dark);">Bespoke Keepsake</h5>
+          <p class="small text-muted mb-0">Every companion arrives wrapped in signature emerald satin ribbon with a personalized adoption passport.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="card-cc p-4 h-100 text-center shadow-sm" style="border-radius: var(--cc-radius); background: #ffffff;">
+          <div class="p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; background: #E8F4EC; color: #198754; font-size: 1.5rem;">
+            <i class="fa-solid fa-truck-fast"></i>
+          </div>
+          <h5 class="fw-bold mb-2" style="color: var(--cc-green-dark);">Free Delivery &gt; ₹600</h5>
+          <p class="small text-muted mb-0">Prompt, carbon-neutral shipping across India. Free delivery on orders over ₹600 (flat ₹80 delivery fee for smaller parcels).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action Banner -->
+<section class="py-5" style="background: linear-gradient(135deg, #214E43 0%, #173A32 100%); color: white;">
+  <div class="container text-center py-4">
+    <h2 class="serif-heading mb-3" style="color: #FAF7F2; font-size: 2.2rem;">Ready to Meet Your Newest Family Member?</h2>
+    <p class="text-white-50 lead mx-auto mb-4" style="max-width: 580px;">
+      Explore our collections of Teddy Bears, Plushies, Baby Soft Toys, and Luxury Gift Sets.
+    </p>
+    <div class="d-flex flex-wrap justify-content-center gap-3">
+      <a href="{% url 'shop:categories_overview' %}" class="btn btn-light px-4 py-3 fw-bold" style="color: var(--cc-green-dark); border-radius: 50px;">
+        <i class="fa-solid fa-shapes me-2"></i> Explore All Categories
+      </a>
+      <a href="{% url 'shop:product_list' %}" class="btn btn-outline-light px-4 py-3 fw-bold" style="border-radius: 50px;">
+        <i class="fa-solid fa-bag-shopping me-2"></i> Shop Full Catalog
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

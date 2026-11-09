@@ -1,0 +1,452 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Shopping Bag — CuddleCart{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1 small">
+          <li class="breadcrumb-item"><a href="{% url 'shop:home' %}" class="text-decoration-none" style="color:var(--cc-green);"><i class="fa-solid fa-house-chimney me-1"></i> Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Shopping Bag</li>
+        </ol>
+      </nav>
+      <h1 class="serif-heading mb-1" style="font-size: 2rem;">Your Cuddle Bag</h1>
+      <p class="text-muted small mb-0">Review your soft toy companions before proceeding to secure checkout.</p>
+    </div>
+    {% if cart.items.exists %}
+      <div class="mt-2 mt-sm-0">
+        <a href="{% url 'shop:clear_cart' %}" class="btn btn-outline-danger btn-sm" data-confirm="Clear all companions from your cuddle bag?">
+          <i class="fa-solid fa-trash-can me-1"></i> Clear Bag
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if has_stock_issue %}
+    <div class="alert alert-warning py-3 px-4 small mb-4 d-flex align-items-center gap-3" style="border-radius: var(--cc-radius);">
+      <i class="fa-solid fa-triangle-exclamation fa-lg text-warning"></i>
+      <div>
+        <strong>Inventory Adjustment Required:</strong>
+        <span class="d-block">Some companions in your bag exceed our current nursery stock. Please update quantities to continue.</span>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if cart.items.exists %}
+  <div class="row g-4">
+    <!-- Cart Items Table / List -->
+    <div class="col-lg-8">
+      <div class="card-cc p-4 shadow-sm mb-4" style="border-radius: var(--cc-radius-lg); background: #ffffff;">
+        <div class="table-responsive">
+          <table class="table table-cc align-middle mb-0">
+            <thead>
+              <tr class="text-muted small text-uppercase">
+                <th>Companion</th>
+                <th class="text-center">Size</th>
+                <th>Price</th>
+                <th style="min-width: 130px;">Quantity</th>
+                <th>Subtotal</th>
+                <th class="text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in items %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="product-img-wrap rounded-3 overflow-hidden" style="width: 72px; height: 72px; flex-shrink: 0; background: var(--cc-sand);">
+                      {% if item.product.get_image %}
+                        <img src="{{ item.product.get_image }}" alt="{{ item.product.name }}" class="w-100 h-100 object-fit-cover">
+                      {% else %}
+                        <img src="{% static 'shop/img/barnaby_bear.jpg' %}" alt="{{ item.product.name }}" class="w-100 h-100 object-fit-cover">
+                      {% endif %}
+                    </div>
+                    <div>
+                      <a href="{% url 'shop:product_detail' item.product.pk %}" class="fw-bold text-decoration-none d-block text-truncate" style="color: var(--cc-green-dark); max-width: 220px; font-size: 1rem;">
+                        {{ item.product.name }}
+                      </a>
+                      <span class="badge bg-light text-muted border" style="font-size: 0.72rem;">{{ item.product.category.name|default:"Plush" }}</span>
+                      {% if item.product.stock_quantity < item.quantity %}
+                        <div class="text-danger small mt-1">
+                          <i class="fa-solid fa-circle-exclamation me-1"></i> Only {{ item.product.stock_quantity }} available
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-light text-dark border">{{ item.selected_size|default:"Medium" }}</span>
+                </td>
+                <td class="fw-semibold">₹{{ item.get_unit_price }}</td>
+                <td style="min-width: 130px;">
+                  <form method="post" action="{% url 'shop:update_cart_item' item.id %}" class="cart-qty-form m-0" data-item-id="{{ item.id }}">
+                    {% csrf_token %}
+                    <div class="input-group input-group-sm flex-nowrap align-items-center border rounded-pill bg-white shadow-sm px-1 py-0" style="width: 114px; border-color: var(--cc-border) !important;">
+                      <button type="button" class="btn btn-sm btn-link text-dark p-1 border-0 text-decoration-none qty-step-btn" data-step="-1" title="Decrease Quantity">
+                        <i class="fa-solid fa-minus" style="font-size: 0.72rem;"></i>
+                      </button>
+                      <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stock_quantity }}" class="form-control form-control-sm border-0 text-center fw-bold p-0 shadow-none cart-qty-input" style="background: transparent; width: 44px; font-size: 0.95rem;" aria-label="Quantity">
+                      <button type="button" class="btn btn-sm btn-link text-dark p-1 border-0 text-decoration-none qty-step-btn" data-step="1" title="Increase Quantity">
+                        <i class="fa-solid fa-plus" style="font-size: 0.72rem;"></i>
+                      </button>
+                    </div>
+                  </form>
+                </td>
+                <td class="fw-bold" style="color: var(--cc-gold-dark);">
+                  <span id="item-subtotal-{{ item.id }}">₹{{ item.get_subtotal }}</span>
+                </td>
+                <td class="text-end">
+                  <a href="{% url 'shop:remove_cart_item' item.id %}" class="btn btn-sm btn-link text-danger p-0" title="Remove" data-confirm="Remove {{ item.product.name }} ({{ item.selected_size }}) from your cuddle bag?">
+                    <i class="fa-solid fa-trash-can fa-lg"></i>
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Coupon & Club Discount Avail Section -->
+      <div class="card-cc p-4 shadow-sm mb-4" style="border-radius: var(--cc-radius-lg); background: #ffffff;">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <i class="fa-solid fa-crown text-warning fs-5"></i>
+          <h5 class="serif-heading mb-0" style="color: var(--cc-green-dark); font-size: 1.25rem;">
+            CuddleCart Club & Coupons
+          </h5>
+        </div>
+
+        {% if coupon_code %}
+          <div class="p-3 rounded-3 bg-success-subtle border border-success-subtle d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+              <span class="badge bg-success me-2">ACTIVE</span>
+              <strong class="text-success font-monospace fs-6">{{ coupon_code }}</strong>
+              <span class="small text-muted ms-2">&mdash; 10% CuddleCart Club Discount Applied! (-₹{{ discount }})</span>
+            </div>
+            <a href="{% url 'shop:remove_coupon' %}" class="btn btn-sm btn-outline-danger">
+              <i class="fa-solid fa-xmark me-1"></i> Remove Coupon
+            </a>
+          </div>
+        {% else %}
+          <p class="small text-muted mb-3">
+            Are you a CuddleCart Club member? Enter coupon <strong>CLUB10</strong> to avail 10% instant discount on your companions!
+          </p>
+          <form method="post" action="{% url 'shop:apply_coupon' %}" class="row g-2 align-items-center">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'shop:cart_view' %}">
+            <div class="col-sm-7 col-md-6">
+              <div class="input-group">
+                <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-tag"></i></span>
+                <input type="text" name="coupon_code" class="form-control text-uppercase" placeholder="Enter coupon code (e.g. CLUB10)" required>
+              </div>
+            </div>
+            <div class="col-sm-5 col-md-4">
+              <button type="submit" class="btn btn-cc w-100">
+                Apply Coupon
+              </button>
+            </div>
+          </form>
+
+          <!-- Quick One-Click Apply Button -->
+          <div class="mt-3 pt-2 border-top">
+            <form method="post" action="{% url 'shop:apply_coupon' %}" class="d-inline">
+              {% csrf_token %}
+              <input type="hidden" name="coupon_code" value="CLUB10">
+              <input type="hidden" name="next" value="{% url 'shop:cart_view' %}">
+              <button type="submit" class="btn btn-sm btn-outline-success">
+                <i class="fa-solid fa-gift me-1"></i> Quick Apply CuddleCart Club 10% Off (Code: CLUB10)
+              </button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+      
+      <div class="d-flex justify-content-between align-items-center">
+        <a href="{% url 'shop:product_list' %}" class="btn btn-outline-cc btn-sm">
+          <i class="fa-solid fa-arrow-left me-1"></i> Continue Shopping
+        </a>
+        <span class="small text-muted"><i class="fa-solid fa-leaf text-success me-1"></i> Every order includes complimentary eco-friendly gift wrap</span>
+      </div>
+    </div>
+
+    <!-- Order Summary Card -->
+    <div class="col-lg-4">
+      <div class="card-cc p-4 sticky-top shadow-sm" style="top: 96px; border-radius: var(--cc-radius-lg); background: #ffffff;">
+        <h5 class="serif-heading mb-3">Order Summary</h5>
+        
+        <!-- Free Shipping Tracker (Threshold: ₹600) -->
+        <div id="cartFreeShippingBox" class="p-3 rounded-3 mb-3" style="background: var(--cc-cream-light); border: 1px solid var(--cc-border);">
+          {% if subtotal >= 600 %}
+            <div class="d-flex align-items-center gap-2 text-success small fw-semibold">
+              <i class="fa-solid fa-circle-check fs-5"></i>
+              <span>Congratulations! You qualify for Free Delivery (Order &gt; ₹600)!</span>
+            </div>
+          {% else %}
+            <div class="small text-muted mb-1">
+              Add <strong class="text-dark">₹{{ 600|floatformat:0 }}</strong> or more for Free Shipping. (Orders below ₹600 incur ₹80 delivery fee).
+            </div>
+            <div class="progress" style="height: 6px;">
+              <div class="progress-bar bg-success" role="progressbar" style="width: {% widthratio subtotal 600 100 %}%;"></div>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="d-flex justify-content-between mb-2 small text-muted">
+          <span>Total Companions</span>
+          <span class="fw-semibold text-dark" id="summaryTotalUnits">{{ cart.total_items }} unit{{ cart.total_items|pluralize }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2 small text-muted">
+          <span>Items Subtotal</span>
+          <span class="fw-semibold text-dark" id="summarySubtotal">₹{{ subtotal }}</span>
+        </div>
+
+        <div id="summaryDiscountRow" class="d-flex justify-content-between mb-2 small text-success {% if discount <= 0 %}d-none{% endif %}">
+          <span>Club Discount (10%)</span>
+          <span class="fw-bold" id="summaryDiscount">-₹{{ discount }}</span>
+        </div>
+
+        <div class="d-flex justify-content-between mb-2 small text-muted">
+          <span>Estimated GST (5%)</span>
+          <span class="fw-semibold text-dark" id="summaryTax">+₹{{ tax }}</span>
+        </div>
+
+        <div class="d-flex justify-content-between mb-2 small text-muted">
+          <span>Delivery Charge</span>
+          <span id="summaryShipping" class="fw-semibold {% if shipping_fee == 0 %}text-success{% else %}text-dark{% endif %}">
+            {% if shipping_fee == 0 %}FREE{% else %}₹{{ shipping_fee }}{% endif %}
+          </span>
+        </div>
+        
+        <hr style="border-color: var(--cc-border);">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <span class="fw-bold" style="font-size: 1.1rem; color: var(--cc-green-dark);">Total Amount</span>
+          <span id="summaryTotalAmount" class="serif-heading fs-3" style="color: var(--cc-green-dark); font-weight: 700;">₹{{ total_amount }}</span>
+        </div>
+
+        <a href="{% url 'shop:checkout' %}" class="btn btn-cc w-100 py-3 mb-3 {% if has_stock_issue %}disabled{% endif %} shadow-sm">
+          <span>Proceed to Checkout</span>
+          <i class="fa-solid fa-arrow-right ms-2"></i>
+        </a>
+
+        <div class="text-center pt-2">
+          <span class="small text-muted d-block"><i class="fa-solid fa-lock text-success me-1"></i> Safe & Secure SSL Encrypted Checkout</span>
+          <span class="small text-muted d-block mt-1">100% GOTS Organic & Infant Safe</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="card-cc p-5 text-center my-4 shadow-sm" style="border-radius: var(--cc-radius-lg); background: #ffffff;">
+    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px; background: var(--cc-cream-light); color: var(--cc-green);">
+      <i class="fa-solid fa-bag-shopping fa-2x"></i>
+    </div>
+    <h3 class="serif-heading mb-2">Your Shopping Bag is Empty</h3>
+    <p class="text-muted mb-4" style="max-width: 450px; margin: 0 auto;">
+      You haven't adopted any companions yet. Explore our handcrafted collection to find the perfect gift or bedtime snuggle buddy.
+    </p>
+    <div>
+      <a href="{% url 'shop:product_list' %}" class="btn btn-cc px-4 py-2">
+        <i class="fa-solid fa-magnifying-glass me-2"></i> Browse Soft Toys
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+  /* Clean styling for interactive pill quantity stepper */
+  .cart-qty-input::-webkit-outer-spin-button,
+  .cart-qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .cart-qty-input[type=number] {
+    -moz-appearance: textfield;
+  }
+  .qty-step-btn:hover {
+    color: var(--cc-green) !important;
+    transform: scale(1.15);
+  }
+  .qty-step-btn:active {
+    transform: scale(0.95);
+  }
+  .item-subtotal-cell {
+    transition: color 0.3s ease;
+  }
+  .updating-flash {
+    opacity: 0.5;
+    transition: opacity 0.2s;
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const forms = document.querySelectorAll('.cart-qty-form');
+
+  forms.forEach(function(form) {
+    const input = form.querySelector('.cart-qty-input');
+    const minusBtn = form.querySelector('[data-step="-1"]');
+    const plusBtn = form.querySelector('[data-step="1"]');
+    let isUpdating = false;
+
+    function syncQuantity(newVal) {
+      if (isUpdating) return;
+      const min = parseInt(input.getAttribute('min') || '1', 10);
+      const max = parseInt(input.getAttribute('max') || '9999', 10);
+      let val = parseInt(newVal, 10);
+
+      if (isNaN(val) || val < min) val = min;
+      if (val > max) {
+        val = max;
+        if (typeof showCuddleToast === 'function') {
+          showCuddleToast(`<i class="fa-solid fa-triangle-exclamation text-warning me-1"></i> Maximum available stock is ${max}.`);
+        }
+      }
+      input.value = val;
+
+      if (minusBtn) minusBtn.disabled = (val <= min);
+      if (plusBtn) plusBtn.disabled = (val >= max);
+
+      const row = form.closest('tr');
+      if (row) row.classList.add('updating-flash');
+      isUpdating = true;
+
+      const formData = new FormData(form);
+      formData.set('quantity', val);
+      formData.set('ajax', '1');
+
+      fetch(form.action, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
+        },
+        body: formData
+      })
+      .then(resp => {
+        if (!resp.ok) throw new Error('Network error');
+        return resp.json();
+      })
+      .then(data => {
+        isUpdating = false;
+        if (row) row.classList.remove('updating-flash');
+
+        if (data.success) {
+          // 1. Update row subtotal
+          const subtotalEl = document.getElementById(`item-subtotal-${data.item_id}`);
+          if (subtotalEl) {
+            subtotalEl.textContent = `₹${data.item_subtotal}`;
+            subtotalEl.style.color = 'var(--cc-green-dark)';
+          }
+
+          // 2. Update order summary fields
+          const unitsEl = document.getElementById('summaryTotalUnits');
+          if (unitsEl) unitsEl.textContent = `${data.total_items} unit${data.total_items === 1 ? '' : 's'}`;
+
+          const subEl = document.getElementById('summarySubtotal');
+          if (subEl) subEl.textContent = `₹${data.subtotal}`;
+
+          const taxEl = document.getElementById('summaryTax');
+          if (taxEl) taxEl.textContent = `+₹${data.tax}`;
+
+          const discRow = document.getElementById('summaryDiscountRow');
+          const discEl = document.getElementById('summaryDiscount');
+          if (discRow && discEl) {
+            if (parseFloat(data.discount) > 0) {
+              discEl.textContent = `-₹${data.discount}`;
+              discRow.classList.remove('d-none');
+            } else {
+              discRow.classList.add('d-none');
+            }
+          }
+
+          const shipEl = document.getElementById('summaryShipping');
+          if (shipEl) {
+            shipEl.textContent = data.shipping_fee;
+            if (data.is_shipping_free) {
+              shipEl.className = 'fw-semibold text-success';
+            } else {
+              shipEl.className = 'fw-semibold text-dark';
+            }
+          }
+
+          const totalEl = document.getElementById('summaryTotalAmount');
+          if (totalEl) totalEl.textContent = `₹${data.total_amount}`;
+
+          // 3. Update Free Shipping Tracker box
+          const trackerBox = document.getElementById('cartFreeShippingBox');
+          if (trackerBox) {
+            if (data.qualifies_free_shipping) {
+              trackerBox.innerHTML = `
+                <div class="d-flex align-items-center gap-2 text-success small fw-semibold">
+                  <i class="fa-solid fa-circle-check fs-5"></i>
+                  <span>Congratulations! You qualify for Free Delivery (Order &gt; ₹600)!</span>
+                </div>
+              `;
+            } else {
+              trackerBox.innerHTML = `
+                <div class="small text-muted mb-1">
+                  Add <strong class="text-dark">₹${data.amount_needed_for_free_shipping}</strong> or more for Free Shipping. (Orders below ₹600 incur ₹80 delivery fee).
+                </div>
+                <div class="progress" style="height: 6px;">
+                  <div class="progress-bar bg-success" role="progressbar" style="width: ${data.progress_percent}%;"></div>
+                </div>
+              `;
+            }
+          }
+
+          // 4. Update Header Nav Badges across desktop & mobile
+          document.querySelectorAll('.cart-badge').forEach(badge => {
+            badge.textContent = data.total_items;
+          });
+
+          if (data.warning_msg && typeof showCuddleToast === 'function') {
+            showCuddleToast(`<i class="fa-solid fa-circle-exclamation text-warning me-1"></i> ${data.warning_msg}`);
+          }
+        }
+      })
+      .catch(err => {
+        isUpdating = false;
+        if (row) row.classList.remove('updating-flash');
+        // Fallback: standard form submit
+        console.warn('AJAX update error, submitting form fallback:', err);
+        form.submit();
+      });
+    }
+
+    if (minusBtn) {
+      minusBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const current = parseInt(input.value, 10) || 1;
+        syncQuantity(current - 1);
+      });
+    }
+
+    if (plusBtn) {
+      plusBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const current = parseInt(input.value, 10) || 1;
+        syncQuantity(current + 1);
+      });
+    }
+
+    input.addEventListener('change', function() {
+      syncQuantity(this.value);
+    });
+
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        syncQuantity(this.value);
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

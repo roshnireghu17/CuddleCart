@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sign In — CuddleCart{% endblock %}
+
+{% block navbar %}
+<!-- Minimalist Auth Header -->
+<header class="py-4 text-center">
+  <a class="brand brand-font h2 d-inline-flex align-items-center gap-2" href="{% url 'shop:home' %}">
+    <i class="fa-solid fa-heart" style="color:var(--cc-green); font-size:1.5rem;"></i>
+    <span>CuddleCart</span>
+  </a>
+</header>
+{% endblock navbar %}
+
+{% block main_class %}container d-flex flex-column align-items-center justify-content-center flex-grow-1 py-4{% endblock %}
+
+{% block content %}
+<div class="auth-card-container">
+  <!-- Top Emblem Badge -->
+  <div class="auth-emblem">
+    <i class="fa-solid fa-heart"></i>
+  </div>
+
+  <h3 class="serif-heading">Welcome Back</h3>
+  <p class="subtitle">Please enter your credentials to sign in.</p>
+
+  <!-- Client-side Alert Box -->
+  <div id="loginClientAlert" class="alert alert-danger py-2 px-3 small mb-3 text-start d-none" role="alert" style="border-radius:var(--cc-radius);">
+    <div id="loginClientAlertMessage"></div>
+  </div>
+
+  <!-- Server-side Form Errors -->
+  {% if form.errors %}
+    <div class="alert alert-danger py-2 px-3 small mb-3 text-start" style="border-radius:var(--cc-radius);">
+      {% for field in form %}
+        {% for error in field.errors %}
+          <div class="mb-1"><i class="fa-solid fa-triangle-exclamation me-1"></i> <strong>{{ field.label }}:</strong> {{ error }}</div>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+        <div class="mb-1"><i class="fa-solid fa-triangle-exclamation me-1"></i> {{ error }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+
+  <form method="post" action="{% url 'shop:login' %}" id="loginForm" autocomplete="off" novalidate onsubmit="return validateLoginForm(event)">
+    {% csrf_token %}
+    
+    <!-- Email / Username field with Icon -->
+    <div class="form-group-icon mb-3">
+      <label for="id_username">Email or Username</label>
+      <i class="fa-regular fa-envelope input-icon"></i>
+      <input type="text" name="username" id="id_username" class="form-control" placeholder="Enter your email or username" required autofocus value="{% if form.is_bound %}{{ form.username.value|default:'' }}{% endif %}" autocomplete="off">
+    </div>
+
+    <!-- Password field with Lock Icon and Eye Toggle (Clean text placeholder - NO DOTS!) -->
+    <div class="form-group-icon mb-3 position-relative">
+      <label for="id_password">Password</label>
+      <i class="fa-solid fa-lock input-icon"></i>
+      <input type="password" name="password" id="id_password" class="form-control pe-5" placeholder="Enter your password" required autocomplete="new-password">
+      <button type="button" class="btn btn-sm text-muted position-absolute end-0 top-50 translate-middle-y me-2 border-0 bg-transparent" onclick="togglePasswordVisibility('id_password', this)" title="Show/Hide password">
+        <i class="fa-regular fa-eye"></i>
+      </button>
+    </div>
+
+    <!-- Remember Me & Forgot Password Row -->
+    <div class="d-flex justify-content-between align-items-center mb-4 small">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="rememberMe" checked>
+        <label class="form-check-label text-muted" for="rememberMe">Remember me</label>
+      </div>
+      <a href="{% url 'shop:password_reset' %}" class="text-muted">Forgot password?</a>
+    </div>
+
+    <button type="submit" class="btn btn-cc w-100 mb-4 py-2" style="border-radius: var(--cc-radius);">
+      Sign in to CuddleCart
+    </button>
+
+    <p class="small text-muted mb-0">
+      New to CuddleCart? <a href="{% url 'shop:register' %}" class="fw-bold" style="color:var(--cc-green);">Create an account</a>
+    </p>
+  </form>
+</div>
+
+<!-- Auth Bottom Legal Footer -->
+<div class="auth-footer-links">
+  <a href="{% url 'shop:home' %}" class="fw-bold text-dark">CuddleCart</a> &middot;
+  <a href="#privacy-modal" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a> &middot;
+  <a href="#terms-modal" data-bs-toggle="modal" data-bs-target="#shippingModal">Terms of Service</a> &middot;
+  <a href="#contact-modal" data-bs-toggle="modal" data-bs-target="#contactModal">Contact Us</a> &middot;
+  <span class="text-muted d-block d-sm-inline mt-1 mt-sm-0">&copy; {% now "Y" %} CuddleCart. All rights reserved. Made with love for little ones.</span>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+  function togglePasswordVisibility(fieldId, btn) {
+    const input = document.getElementById(fieldId);
+    if (!input) return;
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+      input.type = 'text';
+      if (icon) {
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      }
+    } else {
+      input.type = 'password';
+      if (icon) {
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+  }
+
+  function fillLoginForm(user, pwd) {
+    const uInput = document.getElementById('id_username');
+    const pInput = document.getElementById('id_password');
+    if (uInput) uInput.value = user;
+    if (pInput) pInput.value = pwd;
+  }
+
+  function validateLoginForm(event) {
+    const alertBox = document.getElementById('loginClientAlert');
+    const alertMsg = document.getElementById('loginClientAlertMessage');
+    const uInput = document.getElementById('id_username');
+    const pInput = document.getElementById('id_password');
+
+    const errors = [];
+    const uVal = (uInput.value || '').trim();
+    const pVal = pInput.value || '';
+
+    if (!uVal) {
+      errors.push('Please enter your email address or username.');
+      uInput.classList.add('is-invalid');
+    } else if (/<[^>]+>|&nbsp;/.test(uVal.toLowerCase())) {
+      errors.push('Input cannot contain HTML or space tags.');
+      uInput.classList.add('is-invalid');
+    } else {
+      uInput.classList.remove('is-invalid');
+    }
+
+    if (!pVal) {
+      errors.push('Please enter your password.');
+      pInput.classList.add('is-invalid');
+    } else {
+      pInput.classList.remove('is-invalid');
+    }
+
+    if (errors.length > 0) {
+      event.preventDefault();
+      alertMsg.innerHTML = '<ul class="mb-0 ps-3">' + errors.map(e => `<li><i class="fa-solid fa-triangle-exclamation me-1"></i> ${e}</li>`).join('') + '</ul>';
+      alertBox.classList.remove('d-none');
+      alertBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return false;
+    }
+
+    alertBox.classList.add('d-none');
+    return true;
+  }
+
+  // Ensure fresh login fields are empty and not pre-filled with previous person's credentials
+  window.addEventListener('pageshow', function() {
+    {% if not form.is_bound %}
+    const u = document.getElementById('id_username');
+    const p = document.getElementById('id_password');
+    if (u) u.value = '';
+    if (p) p.value = '';
+    {% endif %}
+  });
+</script>
+{% endblock %}
+
+{% block footer %}{% endblock footer %}

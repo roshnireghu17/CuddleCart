@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Tax Invoice #{{ invoice.invoice_number }} — CuddleCart{% endblock %}
+
+{% block extra_css %}
+<style>
+@media print {
+  .navbar, .footer-cc, .btn-print-hide, .breadcrumb, #cuddleClubModal, #quickViewModal {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .invoice-card {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Top Navigation & Action Bar -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 btn-print-hide pb-2 border-bottom">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0 small">
+        <li class="breadcrumb-item"><a href="{% url 'shop:home' %}" class="text-decoration-none" style="color:var(--cc-green);"><i class="fa-solid fa-house-chimney me-1"></i> Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'shop:order_history' %}" class="text-decoration-none" style="color:var(--cc-green);">Orders</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'shop:order_detail' order.id %}" class="text-decoration-none" style="color:var(--cc-green);">Order #{{ order.id }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Tax Invoice</li>
+      </ol>
+    </nav>
+    <div class="d-flex gap-2 mt-2 mt-sm-0">
+      <a href="{% url 'shop:order_detail' order.id %}" class="btn btn-outline-secondary btn-sm">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back to Order
+      </a>
+      <button type="button" class="btn btn-cc btn-sm px-3" onclick="window.print()">
+        <i class="fa-solid fa-print me-1"></i> Print / Download Invoice
+      </button>
+    </div>
+  </div>
+
+  <!-- Official Tax Invoice Document (Table 14: Sales_Invoices) -->
+  <div class="card-cc p-4 p-md-5 mb-5 shadow-sm invoice-card" style="border-radius: var(--cc-radius-lg); background: #ffffff; border: 1px solid var(--cc-border); max-width: 900px; margin: 0 auto;">
+    
+    <!-- Invoice Header -->
+    <div class="row align-items-center pb-4 mb-4 border-bottom g-3">
+      <div class="col-sm-7">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="fa-solid fa-heart brand-icon fs-2" style="color: var(--cc-gold-dark);"></i>
+          <span class="serif-heading fs-3 fw-bold" style="color: var(--cc-green-dark); letter-spacing: -0.5px;">CuddleCart</span>
+        </div>
+        <p class="small text-muted mb-0" style="line-height: 1.6;">
+          <strong>CuddleCart Handcrafted Toys Pvt. Ltd.</strong><br>
+          Cherished Friends Nursery Workshop, Sector 4<br>
+          Bengaluru, Karnataka - 560034, India<br>
+          GSTIN: <strong>29AABCC1234F1Z8</strong> &middot; CIN: U52390KA2024PTC189420<br>
+          Email: care@cuddlecart.in &middot; Phone: +91 (800) 283-3532
+        </p>
+      </div>
+      <div class="col-sm-5 text-sm-end">
+        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 fs-6 mb-2 d-inline-block">
+          TAX INVOICE
+        </span>
+        <h4 class="serif-heading mb-1 text-dark">{{ invoice.invoice_number }}</h4>
+        <span class="small text-muted d-block">Invoice Date: <strong>{{ invoice.invoice_date|date:"F d, Y" }}</strong></span>
+        <span class="small text-muted d-block">Order Reference: <strong>#{{ order.id }}</strong></span>
+        <span class="small text-muted d-block">Order Date: {{ order.order_date|date:"M d, Y, h:i A" }}</span>
+      </div>
+    </div>
+
+    <!-- Bill To & Ship To Details -->
+    <div class="row g-4 mb-4 pb-4 border-bottom">
+      <div class="col-sm-6">
+        <span class="text-uppercase small fw-bold text-muted d-block mb-1">Billed To & Recipient:</span>
+        <h6 class="fw-bold text-dark mb-1">{{ order.address.full_name|default:order.user.get_full_name|default:order.user.username }}</h6>
+        <p class="small text-muted mb-0" style="line-height: 1.6;">
+          {{ order.address.house_building }}{% if order.address.house_building %}, {% endif %}
+          {{ order.address.street|default:order.address.address_line }}<br>
+          {{ order.address.city }}, {{ order.address.state }} - {{ order.address.pincode }}<br>
+          {{ order.address.country }}<br>
+          Phone: {{ order.address.phone|default:order.user.phone|default:"Provided at checkout" }}<br>
+          Email: {{ order.user.email }}
+        </p>
+      </div>
+      <div class="col-sm-6 text-sm-end">
+        <span class="text-uppercase small fw-bold text-muted d-block mb-1">Payment & Dispatch Status:</span>
+        <p class="small text-muted mb-0" style="line-height: 1.6;">
+          Payment Mode: <strong class="text-dark">{% if order.payment %}{{ order.payment.get_payment_method_display }}{% else %}Online Payment{% endif %}</strong><br>
+          Transaction Ref: <code>{{ order.payment.transaction_id|default:"TXN-SIMULATED-PAID" }}</code><br>
+          Payment Status: <span class="badge bg-success-subtle text-success border border-success-subtle">{% if order.payment %}{{ order.payment.get_status_display }}{% else %}Success{% endif %}</span><br>
+          Order Fulfillment: <span class="badge-status badge-status-{{ order.status }}">{{ order.get_status_display }}</span><br>
+          Shipping Partner: <strong>BlueDart Nursery Express (Tracked)</strong>
+        </p>
+      </div>
+    </div>
+
+    <!-- Line Items Table -->
+    <div class="table-responsive mb-4">
+      <table class="table table-bordered table-sm align-middle mb-0">
+        <thead class="table-light small text-uppercase" style="color: var(--cc-green-dark);">
+          <tr>
+            <th style="width: 5%;">#</th>
+            <th>Description of Goods (Handcrafted Soft Toy)</th>
+            <th class="text-center" style="width: 15%;">Selected Size</th>
+            <th class="text-end" style="width: 15%;">Unit Price (₹)</th>
+            <th class="text-center" style="width: 10%;">Qty</th>
+            <th class="text-end" style="width: 18%;">Amount (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in order.items.all %}
+          <tr>
+            <td class="text-muted small text-center">{{ forloop.counter }}</td>
+            <td>
+              <strong class="text-dark">{{ item.product_name|default:item.product.name }}</strong>
+              <span class="d-block small text-muted">HSN Code: 95030020 &middot; 100% GOTS Organic Cotton Soft Toy</span>
+            </td>
+            <td class="text-center">
+              <span class="badge bg-light text-dark border">{{ item.selected_size|default:"Medium" }}</span>
+            </td>
+            <td class="text-end">₹{{ item.price_at_purchase }}</td>
+            <td class="text-center">{{ item.quantity }}</td>
+            <td class="text-end fw-semibold">₹{{ item.get_subtotal }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Amount Breakdown (Matching Table 14: Subtotal, Discount, Tax, Total) -->
+    <div class="row justify-content-end mb-4">
+      <div class="col-md-6 col-lg-5">
+        <div class="p-3 rounded-3 bg-light border">
+          <div class="d-flex justify-content-between mb-2 small">
+            <span class="text-muted">Subtotal (Before Tax & Discount):</span>
+            <span class="fw-semibold text-dark">₹{{ invoice.subtotal }}</span>
+          </div>
+
+          {% if invoice.discount > 0 %}
+          <div class="d-flex justify-content-between mb-2 small text-success">
+            <span>CuddleCart Club Discount (10%):</span>
+            <span class="fw-bold">-₹{{ invoice.discount }}</span>
+          </div>
+          {% endif %}
+
+          <div class="d-flex justify-content-between mb-2 small">
+            <span class="text-muted">Applicable GST (5% On Soft Toys):</span>
+            <span class="fw-semibold text-dark">+₹{{ invoice.tax }}</span>
+          </div>
+
+          <div class="d-flex justify-content-between mb-2 small">
+            <span class="text-muted">Delivery Charges ({% if order.shipping_fee == 0 %}Free above ₹600{% else %}Standard Delivery{% endif %}):</span>
+            <span class="fw-semibold {% if order.shipping_fee == 0 %}text-success{% else %}text-dark{% endif %}">
+              {% if order.shipping_fee == 0 %}FREE{% else %}₹{{ order.shipping_fee }}{% endif %}
+            </span>
+          </div>
+
+          <hr class="my-2">
+
+          <div class="d-flex justify-content-between align-items-center">
+            <strong class="fs-6" style="color: var(--cc-green-dark);">Total Amount (INR):</strong>
+            <strong class="fs-4" style="color: var(--cc-green-dark);">₹{{ invoice.total_amount }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invoice Footer & Declaration -->
+    <div class="pt-3 border-top small text-muted">
+      <div class="row align-items-center g-3">
+        <div class="col-sm-8">
+          <h6 class="fw-bold mb-1 small text-dark">Declaration & Terms:</h6>
+          <p class="mb-0" style="font-size: 0.78rem; line-height: 1.5;">
+            We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct. Handcrafted soft toys covered by 1-year nursery seam warranty.
+          </p>
+        </div>
+        <div class="col-sm-4 text-sm-end">
+          <div class="d-inline-block text-center">
+            <div class="fst-italic text-success fw-bold py-1 px-3 border border-success-subtle rounded-3 bg-success-subtle mb-1" style="font-family: 'Playfair Display', serif;">
+              CuddleCart Verified
+            </div>
+            <span style="font-size: 0.72rem;">Authorized Signatory</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "shop/admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Customers Directory — CuddleCart Admin{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+  <h2 class="serif-heading mb-1" style="font-size:1.8rem;">Customer Directory</h2>
+  <p class="text-muted mb-0">Registered accounts, contact information, order activity, and access management.</p>
+</div>
+
+<div class="card-cc p-4 shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-cc align-middle mb-0">
+      <thead>
+        <tr class="text-muted small text-uppercase">
+          <th>Customer ID</th>
+          <th>Customer Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Joined Date</th>
+          <th>Orders Placed</th>
+          <th>Account Status</th>
+          <th class="text-end">Manage Access</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in customers %}
+        <tr>
+          <td><strong class="font-monospace text-dark">#CUST-{{ c.id }}</strong></td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center text-muted fw-bold" style="width:34px; height:34px; font-size:0.8rem;">
+                {{ c.username|slice:":2"|upper }}
+              </div>
+              <div>
+                <div class="fw-bold" style="color:var(--cc-green-dark);">{{ c.first_name|default:c.username }} {{ c.last_name|default:'' }}</div>
+                <div class="small text-muted">@{{ c.username }}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ c.email }}</td>
+          <td>{{ c.phone|default:"-" }}</td>
+          <td class="small text-muted">{{ c.created_at|date:"M d, Y" }}</td>
+          <td><span class="badge bg-light text-dark border">{{ c.orders_count|default:c.orders.count }} order{{ c.orders_count|default:c.orders.count|pluralize }}</span></td>
+          <td>
+            {% if c.is_active_customer and c.is_active %}
+              <span class="badge bg-success-subtle text-success border border-success">Active</span>
+            {% else %}
+              <span class="badge bg-danger-subtle text-danger border border-danger">Deactivated</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <form method="post" action="{% url 'shop:admin_customer_toggle_status' c.id %}" class="d-inline">
+              {% csrf_token %}
+              {% if c.is_active_customer and c.is_active %}
+                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Deactivate customer" data-confirm="Deactivate account for {{ c.username }}?">
+                  <i class="fa-solid fa-user-slash me-1"></i> Deactivate
+                </button>
+              {% else %}
+                <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2" title="Activate customer" data-confirm="Activate account for {{ c.username }}?">
+                  <i class="fa-solid fa-user-check me-1"></i> Activate
+                </button>
+              {% endif %}
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center py-4 text-muted">No customer accounts registered yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

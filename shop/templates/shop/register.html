@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create Account — CuddleCart{% endblock %}
+
+{% block navbar %}
+<!-- Minimalist Auth Header -->
+<header class="py-4 text-center">
+  <a class="brand brand-font h2 d-inline-flex align-items-center gap-2" href="{% url 'shop:home' %}">
+    <i class="fa-solid fa-heart" style="color:var(--cc-green); font-size:1.5rem;"></i>
+    <span>CuddleCart</span>
+  </a>
+</header>
+{% endblock navbar %}
+
+{% block main_class %}container d-flex flex-column align-items-center justify-content-center flex-grow-1 py-4{% endblock %}
+
+{% block content %}
+<div class="auth-card-container">
+  <!-- Top Emblem Badge -->
+  <div class="auth-emblem">
+    <i class="fa-solid fa-heart"></i>
+  </div>
+
+  <h3 class="serif-heading">Create your Account</h3>
+  <p class="subtitle">Join our family of comfort, joy and cuddles.</p>
+
+  <!-- Client-side Alert Box (Hidden by default, shown on validation error) -->
+  <div id="registerClientAlert" class="alert alert-danger py-2 px-3 small mb-3 text-start d-none" role="alert" style="border-radius:var(--cc-radius);">
+    <div id="registerClientAlertMessage"></div>
+  </div>
+
+  <!-- Server-side Form Errors -->
+  {% if form.errors %}
+    <div class="alert alert-danger py-2 px-3 small mb-3 text-start" style="border-radius:var(--cc-radius);">
+      {% for field in form %}
+        {% for error in field.errors %}
+          <div class="mb-1"><i class="fa-solid fa-circle-exclamation me-1"></i> <strong>{{ field.label }}:</strong> {{ error }}</div>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+        <div class="mb-1"><i class="fa-solid fa-circle-exclamation me-1"></i> {{ error }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" action="{% url 'shop:register' %}" id="registrationForm" novalidate onsubmit="return validateRegistrationForm(event)">
+    {% csrf_token %}
+
+    <!-- Full Name / Username Field -->
+    <div class="form-group-icon mb-3">
+      <label for="id_username">Full Name</label>
+      <i class="fa-regular fa-user input-icon"></i>
+      <input type="text" name="username" id="id_username" class="form-control" placeholder="Enter your full name" required autofocus value="{{ form.username.value|default:'' }}" autocomplete="off">
+      <div id="nameValidationMsg" class="form-text small text-danger d-none mt-1"></div>
+    </div>
+
+    <!-- Email Address Field -->
+    <div class="form-group-icon mb-3">
+      <label for="id_email">Email Address</label>
+      <i class="fa-regular fa-envelope input-icon"></i>
+      <input type="email" name="email" id="id_email" class="form-control" placeholder="Enter your email address" required value="{{ form.email.value|default:'' }}" autocomplete="off">
+      <div id="emailValidationMsg" class="form-text small text-danger d-none mt-1"></div>
+    </div>
+
+    <!-- Phone Number Field -->
+    <div class="form-group-icon mb-3">
+      <label for="id_phone">Phone Number <span class="text-muted fw-normal">(Optional)</span></label>
+      <i class="fa-solid fa-phone input-icon"></i>
+      <input type="tel" name="phone" id="id_phone" class="form-control" placeholder="Enter 10-digit mobile number" maxlength="10" pattern="[0-9]{10}" inputmode="numeric" value="{{ form.phone.value|default:'' }}" autocomplete="off">
+    </div>
+
+    <!-- Password Field (Clean text placeholder - NO DOTS!) -->
+    <div class="form-group-icon mb-2 position-relative">
+      <label for="id_password1">Password</label>
+      <i class="fa-solid fa-lock input-icon"></i>
+      <input type="password" name="password1" id="id_password1" class="form-control pe-5" placeholder="Create your password" required autocomplete="new-password">
+      <button type="button" class="btn btn-sm text-muted position-absolute end-0 top-50 translate-middle-y me-2 border-0 bg-transparent" onclick="togglePasswordVisibility('id_password1', this)" title="Show/Hide password">
+        <i class="fa-regular fa-eye"></i>
+      </button>
+    </div>
+
+    <!-- Live Password Criteria Checklist -->
+    <div class="password-checklist-box p-2 mb-3 bg-light rounded text-start" style="font-size: 0.8rem; border: 1px solid rgba(0,0,0,0.06);">
+      <div class="text-muted fw-bold mb-1">Password must contain:</div>
+      <div class="d-flex flex-wrap gap-2">
+        <span id="critLength" class="badge bg-secondary-subtle text-muted"><i class="fa-solid fa-circle-xmark me-1"></i>8+ chars</span>
+        <span id="critUpper" class="badge bg-secondary-subtle text-muted"><i class="fa-solid fa-circle-xmark me-1"></i>1 Uppercase</span>
+        <span id="critLower" class="badge bg-secondary-subtle text-muted"><i class="fa-solid fa-circle-xmark me-1"></i>1 Lowercase</span>
+        <span id="critNumber" class="badge bg-secondary-subtle text-muted"><i class="fa-solid fa-circle-xmark me-1"></i>1 Number</span>
+        <span id="critSpecial" class="badge bg-secondary-subtle text-muted"><i class="fa-solid fa-circle-xmark me-1"></i>1 Symbol (!@#$)</span>
+      </div>
+    </div>
+
+    <!-- Confirm Password Field (Clean text placeholder - NO DOTS!) -->
+    <div class="form-group-icon mb-3 position-relative">
+      <label for="id_password2">Confirm Password</label>
+      <i class="fa-solid fa-shield-halved input-icon"></i>
+      <input type="password" name="password2" id="id_password2" class="form-control pe-5" placeholder="Re-enter password to confirm" required autocomplete="new-password">
+      <button type="button" class="btn btn-sm text-muted position-absolute end-0 top-50 translate-middle-y me-2 border-0 bg-transparent" onclick="togglePasswordVisibility('id_password2', this)" title="Show/Hide password">
+        <i class="fa-regular fa-eye"></i>
+      </button>
+      <div id="passwordMatchMsg" class="form-text small mt-1"></div>
+    </div>
+
+    <button type="submit" id="regSubmitBtn" class="btn btn-cc w-100 mb-4 py-2" style="border-radius: var(--cc-radius);">
+      <span>Create Account</span>
+      <i class="fa-solid fa-arrow-right ms-2"></i>
+    </button>
+
+    <p class="small text-muted mb-0">
+      Already have an account? <a href="{% url 'shop:login' %}" class="fw-bold" style="color:var(--cc-green);">Sign In &rarr;</a>
+    </p>
+  </form>
+</div>
+
+<!-- Auth Bottom Legal Footer -->
+<div class="auth-footer-links">
+  <a href="{% url 'shop:home' %}" class="fw-bold text-dark">CuddleCart</a> &middot;
+  <a href="#privacy-modal" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a> &middot;
+  <a href="#terms-modal" data-bs-toggle="modal" data-bs-target="#shippingModal">Terms of Service</a> &middot;
+  <a href="#contact-modal" data-bs-toggle="modal" data-bs-target="#contactModal">Contact Us</a> &middot;
+  <span class="text-muted d-block d-sm-inline mt-1 mt-sm-0">&copy; {% now "Y" %} CuddleCart. All rights reserved. Made with love for little ones.</span>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+  function togglePasswordVisibility(fieldId, btn) {
+    const input = document.getElementById(fieldId);
+    if (!input) return;
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+      input.type = 'text';
+      if (icon) {
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      }
+    } else {
+      input.type = 'password';
+      if (icon) {
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+  }
+
+  // Live Password Checklist Updates
+  const p1Input = document.getElementById('id_password1');
+  const p2Input = document.getElementById('id_password2');
+  const matchMsg = document.getElementById('passwordMatchMsg');
+
+  function updateBadge(el, isValid, text) {
+    if (!el) return;
+    if (isValid) {
+      el.className = 'badge bg-success text-white';
+      el.innerHTML = '<i class="fa-solid fa-check me-1"></i>' + text;
+    } else {
+      el.className = 'badge bg-secondary-subtle text-muted';
+      el.innerHTML = '<i class="fa-solid fa-circle-xmark me-1"></i>' + text;
+    }
+  }
+
+  function checkPasswordStrength() {
+    const val = p1Input.value || '';
+    const hasLength = val.length >= 8;
+    const hasUpper = /[A-Z]/.test(val);
+    const hasLower = /[a-z]/.test(val);
+    const hasNumber = /[0-9]/.test(val);
+    const hasSpecial = /[^A-Za-z0-9]/.test(val);
+
+    updateBadge(document.getElementById('critLength'), hasLength, '8+ chars');
+    updateBadge(document.getElementById('critUpper'), hasUpper, '1 Uppercase');
+    updateBadge(document.getElementById('critLower'), hasLower, '1 Lowercase');
+    updateBadge(document.getElementById('critNumber'), hasNumber, '1 Number');
+    updateBadge(document.getElementById('critSpecial'), hasSpecial, '1 Symbol');
+
+    checkMatch();
+  }
+
+  function checkMatch() {
+    const p1 = p1Input.value || '';
+    const p2 = p2Input.value || '';
+
+    if (!p2) {
+      matchMsg.textContent = '';
+      matchMsg.className = 'form-text small mt-1';
+      return;
+    }
+
+    if (p1 === p2) {
+      matchMsg.innerHTML = '<i class="fa-solid fa-check me-1"></i> Passwords match perfectly!';
+      matchMsg.className = 'form-text small mt-1 text-success fw-semibold';
+      p2Input.classList.remove('is-invalid');
+      p2Input.classList.add('is-valid');
+    } else {
+      matchMsg.innerHTML = '<i class="fa-solid fa-circle-xmark me-1"></i> Passwords do not match!';
+      matchMsg.className = 'form-text small mt-1 text-danger fw-semibold';
+      p2Input.classList.remove('is-valid');
+      p2Input.classList.add('is-invalid');
+    }
+  }
+
+  if (p1Input) p1Input.addEventListener('input', checkPasswordStrength);
+  if (p2Input) p2Input.addEventListener('input', checkMatch);
+
+  // Full form submission validator with prominent alert
+  function validateRegistrationForm(event) {
+    const alertBox = document.getElementById('registerClientAlert');
+    const alertMsg = document.getElementById('registerClientAlertMessage');
+    const nameInput = document.getElementById('id_username');
+    const emailInput = document.getElementById('id_email');
+    const p1 = p1Input ? p1Input.value : '';
+    const p2 = p2Input ? p2Input.value : '';
+
+    const errors = [];
+
+    // 1. Name validation
+    const rawName = nameInput.value || '';
+    const cleanedName = rawName.trim();
+    if (!cleanedName) {
+      errors.push('Full name cannot be blank or contain only spaces.');
+      nameInput.classList.add('is-invalid');
+    } else if (/<[^>]+>|&nbsp;|<space>/.test(rawName.toLowerCase())) {
+      errors.push('Full name cannot contain space tags (&nbsp;) or HTML tags.');
+      nameInput.classList.add('is-invalid');
+    } else if (!/[a-zA-Z]/.test(cleanedName)) {
+      errors.push('Full name must contain at least one letter.');
+      nameInput.classList.add('is-invalid');
+    } else if (cleanedName.length < 3) {
+      errors.push('Full name must be at least 3 characters long.');
+      nameInput.classList.add('is-invalid');
+    } else {
+      nameInput.classList.remove('is-invalid');
+    }
+
+    // 2. Email validation
+    const rawEmail = (emailInput.value || '').trim();
+    const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+    if (!rawEmail) {
+      errors.push('Email address is required.');
+      emailInput.classList.add('is-invalid');
+    } else if (!emailRegex.test(rawEmail) || rawEmail.includes('..')) {
+      errors.push('Please enter a valid email address.');
+      emailInput.classList.add('is-invalid');
+    } else {
+      emailInput.classList.remove('is-invalid');
+    }
+
+    // Phone validation (if provided, must be exactly 10 digits)
+    const phoneInput = document.getElementById('id_phone');
+    if (phoneInput) {
+      const rawPhone = (phoneInput.value || '').trim();
+      if (rawPhone && !/^\d{10}$/.test(rawPhone)) {
+        errors.push('Phone number must be exactly 10 digits.');
+        phoneInput.classList.add('is-invalid');
+      } else {
+        phoneInput.classList.remove('is-invalid');
+      }
+    }
+
+    // 3. Password validation (min 8, upper, lower, number, special)
+    if (!p1) {
+      errors.push('Password is required.');
+      p1Input.classList.add('is-invalid');
+    } else {
+      if (p1.length < 8) errors.push('Password must be at least 8 characters long.');
+      if (!/[A-Z]/.test(p1)) errors.push('Password must contain at least one capital uppercase letter (A-Z).');
+      if (!/[a-z]/.test(p1)) errors.push('Password must contain at least one lowercase letter (a-z).');
+      if (!/[0-9]/.test(p1)) errors.push('Password must contain at least one number (0-9).');
+      if (!/[^A-Za-z0-9]/.test(p1)) errors.push('Password must contain at least one special symbol (!@#$%^&*).');
+      if (p1.length >= 8 && /[A-Z]/.test(p1) && /[a-z]/.test(p1) && /[0-9]/.test(p1) && /[^A-Za-z0-9]/.test(p1)) {
+        p1Input.classList.remove('is-invalid');
+      } else {
+        p1Input.classList.add('is-invalid');
+      }
+    }
+
+    // 4. Confirm Password matching validation
+    if (!p2) {
+      errors.push('Please re-enter your password to confirm.');
+      p2Input.classList.add('is-invalid');
+    } else if (p1 !== p2) {
+      errors.push('Passwords do not match! Please make sure both passwords are identical.');
+      p2Input.classList.add('is-invalid');
+    } else {
+      p2Input.classList.remove('is-invalid');
+    }
+
+    // If there are errors, stop submit and display alert
+    if (errors.length > 0) {
+      event.preventDefault();
+      alertMsg.innerHTML = '<ul class="mb-0 ps-3">' + errors.map(e => `<li><i class="fa-solid fa-triangle-exclamation me-1"></i> ${e}</li>`).join('') + '</ul>';
+      alertBox.classList.remove('d-none');
+      alertBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return false;
+    }
+
+    alertBox.classList.add('d-none');
+    return true;
+  }
+</script>
+{% endblock %}
+
+{% block footer %}{% endblock footer %}

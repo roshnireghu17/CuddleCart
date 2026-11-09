@@ -1,0 +1,635 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}CuddleCart — Cherished Friends, Forever Loved{% endblock %}
+
+{% block content %}
+<!-- =========================================================================
+     1. Hero Section (Faithful Match to User Mockup)
+     ========================================================================= -->
+<section class="hero-showcase-section position-relative">
+  <div class="hero-bg-container">
+    <img src="{% static 'shop/img/hero_child.jpg' %}" alt="Child hugging soft CuddleCart teddy bear in cozy nursery"
+      class="hero-backdrop-img">
+    <div class="hero-gradient-overlay"></div>
+  </div>
+
+  <div class="container hero-inner-content position-relative">
+    <div class="row align-items-center min-vh-hero">
+      <div class="col-lg-8 col-md-10 col-12">
+        <div class="hero-card-panel">
+          <!-- Hero Headline -->
+          <h1 class="hero-title">
+            Cherished Friends,<br>
+            <span class="hero-gold-text">Forever Loved.</span>
+          </h1>
+
+          <!-- Subtitle -->
+          <p class="hero-description">
+            Discover our collection of handcrafted, incredibly soft companions designed to bring comfort and joy to your
+            little ones.
+          </p>
+
+          <!-- Call to Action Buttons -->
+          <div class="d-flex flex-wrap align-items-center gap-3 mt-4">
+            <a href="{% url 'shop:product_list' %}" class="btn btn-cc hero-cta-btn">
+              <span>Shop the Collection</span>
+              <i class="fa-solid fa-arrow-right ms-2"></i>
+            </a>
+
+            <a href="{% url 'shop:categories_overview' %}" class="btn btn-outline-dark-cc hero-quiz-btn">
+              <i class="fa-solid fa-shapes me-2"></i> Explore Categories
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     2. Trust & Quality Highlights Bar
+     ========================================================================= -->
+<section class="trust-bar-section py-4">
+  <div class="container">
+    <div class="row g-3 justify-content-between align-items-center text-center text-md-start">
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3 trust-item">
+          <div class="trust-icon-box"><i class="fa-solid fa-leaf"></i></div>
+          <div>
+            <h6 class="mb-0 fw-bold">100% GOTS Cotton</h6>
+            <span class="small text-muted">Pure organic fibers</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3 trust-item">
+          <div class="trust-icon-box"><i class="fa-solid fa-shield-heart"></i></div>
+          <div>
+            <h6 class="mb-0 fw-bold">Safe from 0+ Months</h6>
+            <span class="small text-muted">Embroidered details</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3 trust-item">
+          <div class="trust-icon-box"><i class="fa-solid fa-hand-holding-heart"></i></div>
+          <div>
+            <h6 class="mb-0 fw-bold">Artisanal Craft</h6>
+            <span class="small text-muted">Hand-stitched with love</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3 trust-item">
+          <div class="trust-icon-box"><i class="fa-solid fa-truck-fast"></i></div>
+          <div>
+            <h6 class="mb-0 fw-bold">Fast & Free Delivery</h6>
+            <span class="small text-muted">On all orders above ₹600 (₹80 under ₹600)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     3. Shop by Category (Interactive Visual Category Tiles)
+     ========================================================================= -->
+<section class="py-5" style="background: var(--cc-cream-light);">
+  <div class="container">
+    <div class="d-flex flex-wrap justify-content-between align-items-end mb-4">
+      <div>
+        <span class="badge-tag-warm mb-2"><i class="fa-solid fa-tags me-1"></i> Curated Collections</span>
+        <h2 class="serif-heading mb-1">Shop by Category</h2>
+        <p class="text-muted mb-0">Browse our thoughtfully designed soft toy collections.</p>
+      </div>
+      <a href="{% url 'shop:product_list' %}" class="btn btn-outline-cc btn-sm mt-3 mt-sm-0">
+        View All Categories &rarr;
+      </a>
+    </div>
+
+    <div class="row g-3">
+      {% for cat in categories %}
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{% url 'shop:product_list' %}?category={{ cat.id }}" class="card-cc h-100 p-3 text-center d-flex flex-column align-items-center justify-content-center text-decoration-none category-tile-card" style="border-radius: var(--cc-radius); transition: all 0.25s ease;">
+          <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 58px; height: 58px; background: var(--cc-green-light); color: var(--cc-green); font-size: 1.5rem;">
+            {% if "Bear" in cat.name %}
+              <i class="fa-solid fa-paw"></i>
+            {% elif "Baby" in cat.name %}
+              <i class="fa-solid fa-baby"></i>
+            {% elif "Gift" in cat.name %}
+              <i class="fa-solid fa-gift"></i>
+            {% elif "Plush" in cat.name %}
+              <i class="fa-solid fa-heart"></i>
+            {% elif "Animal" in cat.name %}
+              <i class="fa-solid fa-dove"></i>
+            {% else %}
+              <i class="fa-solid fa-shapes"></i>
+            {% endif %}
+          </div>
+          <h6 class="fw-bold mb-1 text-truncate w-100" style="color: var(--cc-green-dark); font-size: 0.92rem;">{{ cat.name }}</h6>
+          <span class="small text-muted" style="font-size: 0.78rem;">{{ cat.prod_count|default:"Explore" }} toys</span>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     3. Interactive Companion Finder Quiz / Category Filter ("Something Good")
+     ========================================================================= -->
+<section id="companionFinderSection" class="companion-finder-section py-5">
+  <div class="container">
+    <div class="d-flex flex-wrap justify-content-between align-items-end mb-4">
+      <div>
+        <span class="badge-tag-warm mb-2"><i class="fa-solid fa-sparkles me-1"></i> Nursery Favorites</span>
+        <h2 class="serif-heading mb-1">Handcrafted Companions</h2>
+        <p class="text-muted mb-0">Pure certified organic cuddle friends ready to bring warmth to your nursery.</p>
+      </div>
+      <a href="{% url 'shop:product_list' %}" class="btn btn-outline-cc btn-sm mt-3 mt-sm-0">
+        Browse Complete Collection &rarr;
+      </a>
+    </div>
+
+    <!-- Dynamic Product Cards Grid -->
+    <div class="row g-4" id="companionsGrid">
+      {% for p in all_products %}
+      <div class="col-6 col-lg-3 col-md-4 companion-item-col" data-category="{{ p.category.name|default:'' }}">
+        <div class="card-cc h-100 companion-card position-relative">
+          <!-- Wishlist Heart Overlay -->
+          {% if user.is_authenticated %}
+          <form method="post" action="{% url 'shop:add_to_wishlist' p.pk %}" class="position-absolute z-3"
+            style="top:12px; right:12px;">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <button type="submit"
+              class="wishlist-btn-overlay border-0 {% if p.pk in user_wishlist_ids %}active{% endif %}"
+              title="Add to Wishlist">
+              <i class="fa-solid fa-heart"></i>
+            </button>
+          </form>
+          {% else %}
+          <button type="button" class="wishlist-btn-overlay border-0 position-absolute z-3"
+            style="top:12px; right:12px;" data-bs-toggle="modal" data-bs-target="#authModal"
+            title="Sign in to save favorites">
+            <i class="fa-regular fa-heart"></i>
+          </button>
+          {% endif %}
+
+          <!-- Badge Tag -->
+          <div class="position-absolute z-2" style="top:12px; left:12px;">
+            {% if forloop.first %}
+            <span class="badge-tag-warm shadow-sm">Bestseller</span>
+            {% elif p.category.name == 'Gift Sets' %}
+            <span class="badge-tag-gold shadow-sm">Gift Ready</span>
+            {% elif p.category.name == 'Baby Soft Toys' %}
+            <span class="badge-tag-new shadow-sm">Newborn Safe</span>
+            {% else %}
+            <span class="badge-tag-new shadow-sm">Organic</span>
+            {% endif %}
+          </div>
+
+          <!-- Image Wrap -->
+          <a href="{% url 'shop:product_detail' p.pk %}" class="product-img-wrap d-block">
+            {% if p.get_image %}
+            <img src="{{ p.get_image }}" alt="{{ p.name }}" loading="lazy">
+            {% else %}
+            <img src="{% static 'shop/img/barnaby_bear.jpg' %}" alt="{{ p.name }}">
+            {% endif %}
+          </a>
+
+          <!-- Card Body -->
+          <div class="p-3 text-center d-flex flex-column justify-content-between flex-grow-1">
+            <div>
+              <span class="small text-muted d-block mb-1">{{ p.category.name|default:"Soft Toy" }}</span>
+              <h6 class="fw-bold mb-1 product-title" style="color:var(--cc-green-dark);">
+                <a href="{% url 'shop:product_detail' p.pk %}" class="text-reset">{{ p.name }}</a>
+              </h6>
+              <div class="d-flex justify-content-center align-items-center gap-1 mb-2">
+                <div class="star-rating small">
+                  <i class="fa-solid fa-star"></i>
+                  <i class="fa-solid fa-star"></i>
+                  <i class="fa-solid fa-star"></i>
+                  <i class="fa-solid fa-star"></i>
+                  <i class="fa-solid fa-star"></i>
+                </div>
+                <span class="small text-muted">(5.0)</span>
+              </div>
+              <p class="product-price mb-3">₹{{ p.price }}</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex flex-column gap-2 mt-auto">
+              <button type="button" class="btn btn-sm btn-outline-cc w-100"
+                data-name="{{ p.name|escape }}"
+                data-price="{{ p.price }}"
+                data-image="{% if p.get_image %}{{ p.get_image }}{% else %}{% static 'shop/img/barnaby_bear.jpg' %}{% endif %}"
+                data-description="{{ p.description|default:''|escape }}"
+                data-category="{{ p.category.name|default:'Companion'|escape }}"
+                data-add-url="{% url 'shop:add_to_cart' p.pk %}"
+                data-detail-url="{% url 'shop:product_detail' p.pk %}"
+                onclick="openQuickViewModal(this)">
+                <i class="fa-regular fa-eye me-1"></i> Quick View
+              </button>
+
+              {% if user.is_authenticated %}
+              <form method="post" action="{% url 'shop:add_to_cart' p.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="btn btn-sm btn-cc w-100">
+                  <i class="fa-solid fa-bag-shopping me-1"></i> Add to Bag
+                </button>
+              </form>
+              {% else %}
+              <button type="button" class="btn btn-sm btn-cc w-100" onclick="promptLoginRequired('{{ p.name|escapejs }}')">
+                <i class="fa-solid fa-lock me-1"></i> Sign In to Add to Bag
+              </button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     4. Three Feature Pillars (Matching Page 14)
+     ========================================================================= -->
+<section class="feature-pillars-section py-5 my-3">
+  <div class="container">
+    <div class="row g-4 text-center">
+      <div class="col-md-4">
+        <div class="feature-pillar-card">
+          <div class="feature-icon-circle">
+            <i class="fa-solid fa-leaf"></i>
+          </div>
+          <h5>100% Organic Cotton</h5>
+          <p>Gentle on sensitive skin and kind to our planet. We only use the softest natural certified fibers for
+            endless cuddles.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-pillar-card">
+          <div class="feature-icon-circle">
+            <i class="fa-solid fa-shield-heart"></i>
+          </div>
+          <h5>Safe For All Ages</h5>
+          <p>Embroidered details and reinforced stitching ensure our friends are safe, durable, and ready for hugs from
+            day one.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-pillar-card">
+          <div class="feature-icon-circle">
+            <i class="fa-solid fa-heart"></i>
+          </div>
+          <h5>Made with Love</h5>
+          <p>Every plushie is thoughtfully designed and handcrafted to bring comfort, warmth, and joy for years of sweet
+            childhood memories.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     5. "The Perfect Gift" Section (Matching Page 14)
+     ========================================================================= -->
+<section class="gift-collections-section py-4 mb-5">
+  <div class="container">
+    <div class="text-center mb-4">
+      <span class="badge-tag-warm mb-2"><i class="fa-solid fa-gift me-1"></i> Curated Gift Sets</span>
+      <h2 class="serif-heading">The Perfect Gift</h2>
+      <p class="text-muted">Find the ideal companion for any special milestone or celebration.</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-6">
+        <a href="{% url 'shop:product_list' %}?q=Baby" class="gift-banner-card d-block">
+          <img src="{% static 'shop/img/gift_newborns.jpg' %}" alt="For Newborns Collection"
+            onerror="this.src='https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=800&q=80'">
+          <div class="gift-banner-overlay">
+            <div class="gift-banner-content">
+              <h4>For Newborns</h4>
+              <p>Ultra-soft, washable first friends designed to soothe little dreamers.</p>
+            </div>
+            <div class="gift-banner-btn">
+              <i class="fa-solid fa-arrow-right"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-6">
+        <a href="{% url 'shop:product_list' %}?q=Bunny" class="gift-banner-card d-block">
+          <img src="{% static 'shop/img/gift_birthdays.jpg' %}" alt="For Birthdays Collection"
+            onerror="this.src='https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80'">
+          <div class="gift-banner-overlay">
+            <div class="gift-banner-content">
+              <h4>For Birthdays</h4>
+              <p>Huggable companions ready for years of imaginative bedtime adventures.</p>
+            </div>
+            <div class="gift-banner-btn">
+              <i class="fa-solid fa-arrow-right"></i>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     6. The CuddleCart Craftsmanship & Family Promise
+     ========================================================================= -->
+<section class="cuddle-promo-banner-section py-4 mb-5">
+  <div class="container">
+    <div class="cuddle-promo-box p-4 p-md-5 text-center text-md-start position-relative overflow-hidden shadow-lg" style="background: linear-gradient(135deg, #173A32 0%, #214E43 60%, #2B6255 100%); border-radius: var(--cc-radius-lg);">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+          <div class="d-inline-flex align-items-center gap-2 promo-pill-tag mb-3" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: #FAF7F2; padding: 6px 16px; border-radius: 50px; font-size: 0.82rem; font-weight: 600;">
+            <i class="fa-solid fa-gem text-warning"></i> <span>The CuddleCart Standard</span>
+          </div>
+          <h2 class="serif-heading text-white mb-3" style="font-size: 2.2rem; line-height: 1.25;">Crafted for Gentle Skin,<br>Cherished for Generations</h2>
+          <p class="text-white-50 mb-4" style="max-width: 560px; line-height: 1.65; font-size: 0.98rem;">
+            Every CuddleCart soft toy is mindfully shaped from certified organic yarns, meticulously stuffed with hypoallergenic fill, and finished with delicate hand embroidery. Designed for endless hugs and worry-free snuggles.
+          </p>
+
+          <!-- 4 Pillars of Promise -->
+          <div class="row g-3 mb-2 text-start">
+            <div class="col-sm-6">
+              <div class="d-flex align-items-center gap-2 text-white small">
+                <i class="fa-solid fa-leaf text-warning fs-6"></i>
+                <span><strong>100% GOTS</strong> Organic Cotton Yarns</span>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="d-flex align-items-center gap-2 text-white small">
+                <i class="fa-solid fa-shield-heart text-warning fs-6"></i>
+                <span><strong>0+ Infant Safety</strong> Tested & Verified</span>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="d-flex align-items-center gap-2 text-white small">
+                <i class="fa-solid fa-gift text-warning fs-6"></i>
+                <span><strong>Complimentary</strong> Gift Box Packaging</span>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="d-flex align-items-center gap-2 text-white small">
+                <i class="fa-solid fa-truck-fast text-warning fs-6"></i>
+                <span><strong>Free Express Delivery</strong> Over ₹600</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5 text-center text-lg-end">
+          <div class="p-4 rounded-4 bg-white text-dark text-start shadow-sm d-inline-block w-100" style="max-width: 380px;">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="badge-tag-gold"><i class="fa-solid fa-heart me-1"></i> Family Promise</span>
+              <span class="small text-success fw-bold"><i class="fa-solid fa-circle-check me-1"></i> Verified Safe</span>
+            </div>
+            <h5 class="serif-heading mb-2 text-dark">Gift a Cherished Friend</h5>
+            <p class="small text-muted mb-3" style="line-height: 1.55;">
+              Every parcel arrives safely wrapped in our signature reusable organic tote bag with a personalized greeting card.
+            </p>
+            
+            <div class="p-3 mb-3 rounded-3 bg-light border">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="fa-solid fa-box-open text-muted"></i>
+                <span class="small fw-semibold text-dark">Included with Every Order:</span>
+              </div>
+              <ul class="list-unstyled mb-0 small text-muted" style="line-height: 1.7;">
+                <li><i class="fa-solid fa-check text-success me-2"></i>Hand-tied satin keepsake ribbon</li>
+                <li><i class="fa-solid fa-check text-success me-2"></i>Care instructions & adoption passport</li>
+                <li><i class="fa-solid fa-check text-success me-2"></i>Eco-friendly protective shipping</li>
+              </ul>
+            </div>
+
+            <a href="{% url 'shop:product_list' %}" class="btn btn-cc w-100 py-2">
+              <i class="fa-solid fa-bag-shopping me-2"></i> Explore Collection
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     7. "Happy Cuddlers" Reviews Section (Dynamic from Database)
+     ========================================================================= -->
+<section id="reviews-section" class="happy-cuddlers-section py-5 mb-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="badge-tag-warm mb-2"><i class="fa-solid fa-heart me-1"></i> Real Stories</span>
+      <h2 class="serif-heading">Happy Cuddlers</h2>
+      <p class="text-muted">Read sweet memories from families who welcomed CuddleCart into their homes.</p>
+    </div>
+
+    <div class="row g-4">
+      {% for rev in latest_reviews %}
+      <div class="col-md-4">
+        <div class="testimonial-card h-100 d-flex flex-column justify-content-between">
+          <div>
+            <div class="star-rating mb-2">
+              {% for i in "12345"|make_list %}
+                {% if forloop.counter <= rev.rating %}
+                  <i class="fa-solid fa-star"></i>
+                {% else %}
+                  <i class="fa-regular fa-star"></i>
+                {% endif %}
+              {% endfor %}
+            </div>
+            <p class="testimonial-quote">
+              "{{ rev.comment|default:'An adorable, exceptionally soft companion that brought endless smiles to our nursery.' }}"
+            </p>
+          </div>
+          <div class="testimonial-author mt-3">
+            <div class="testimonial-avatar">
+              <span>{{ rev.user.first_name|default:rev.user.username|slice:":1"|upper }}</span>
+            </div>
+            <div class="testimonial-info">
+              <h6>{{ rev.user.get_full_name|default:rev.user.username }}</h6>
+              <span>Verified Family &middot; {{ rev.product.name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-md-4">
+        <div class="testimonial-card h-100 d-flex flex-column justify-content-between">
+          <div>
+            <div class="star-rating mb-2">
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+            </div>
+            <p class="testimonial-quote">
+              "Luna Bunny is my daughter's absolute favorite! It goes everywhere with us. The quality is amazing and
+              it's so incredibly soft, even after multiple washes."
+            </p>
+          </div>
+          <div class="testimonial-author mt-3">
+            <div class="testimonial-avatar"><span>SM</span></div>
+            <div class="testimonial-info">
+              <h6>Sarah M.</h6>
+              <span>Verified Parent &middot; Luna Bunny</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="testimonial-card h-100 d-flex flex-column justify-content-between">
+          <div>
+            <div class="star-rating mb-2">
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+            </div>
+            <p class="testimonial-quote">
+              "We bought Barnaby Bear for our grandson's first birthday. It's the perfect size and feels so safe and
+              well-made. He instantly bonded with it!"
+            </p>
+          </div>
+          <div class="testimonial-author mt-3">
+            <div class="testimonial-avatar"><span>DK</span></div>
+            <div class="testimonial-info">
+              <h6>David K.</h6>
+              <span>Verified Grandparent &middot; Barnaby Bear</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="testimonial-card h-100 d-flex flex-column justify-content-between">
+          <div>
+            <div class="star-rating mb-2">
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+            </div>
+            <p class="testimonial-quote">
+              "Finnegan Fox is gorgeous! The 100% organic cotton texture gives me total peace of mind with our
+              6-month-old. Outstanding craftsmanship."
+            </p>
+          </div>
+          <div class="testimonial-author mt-3">
+            <div class="testimonial-avatar"><span>EM</span></div>
+            <div class="testimonial-info">
+              <h6>Emily R.</h6>
+              <span>Verified Buyer &middot; Finnegan Fox</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     8. Instagram / Community Nursery Moments
+     ========================================================================= -->
+<section id="about-section" class="nursery-moments-section py-4 mb-5">
+  <div class="container">
+    <div class="d-flex flex-wrap justify-content-between align-items-end mb-4">
+      <div>
+        <h3 class="serif-heading mb-1">Little Moments, Big Hugs</h3>
+        <p class="text-muted mb-0">Follow our journey on Instagram &middot; Tag <strong>#CuddleCartFriends</strong></p>
+      </div>
+      <a href="https://instagram.com" target="_blank" rel="noopener"
+        class="btn btn-outline-cc btn-sm-custom mt-2 mt-sm-0">
+        <i class="fa-brands fa-instagram me-1"></i> Follow @CuddleCart
+      </a>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-6 col-md-3">
+        <div class="insta-photo-card position-relative overflow-hidden rounded-3 shadow-sm">
+          <img src="{% static 'shop/img/hero_child.jpg' %}" alt="Nursery moment 1"
+            class="img-fluid w-100 h-100 object-fit-cover">
+          <div class="insta-photo-overlay">
+            <i class="fa-brands fa-instagram fa-lg"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="insta-photo-card position-relative overflow-hidden rounded-3 shadow-sm">
+          <img src="{% static 'shop/img/hero.jpg' %}" alt="Nursery moment 2"
+            class="img-fluid w-100 h-100 object-fit-cover">
+          <div class="insta-photo-overlay">
+            <i class="fa-brands fa-instagram fa-lg"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="insta-photo-card position-relative overflow-hidden rounded-3 shadow-sm">
+          <img src="{% static 'shop/img/gift_newborns.jpg' %}" alt="Nursery moment 3"
+            class="img-fluid w-100 h-100 object-fit-cover">
+          <div class="insta-photo-overlay">
+            <i class="fa-brands fa-instagram fa-lg"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="insta-photo-card position-relative overflow-hidden rounded-3 shadow-sm">
+          <img src="{% static 'shop/img/gift_birthdays.jpg' %}" alt="Nursery moment 4"
+            class="img-fluid w-100 h-100 object-fit-cover">
+          <div class="insta-photo-overlay">
+            <i class="fa-brands fa-instagram fa-lg"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Smooth scroll to Companion Finder Quiz
+  function scrollToQuiz() {
+    const el = document.getElementById('companionFinderSection');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  // Interactive Filter logic
+  function filterCompanions(category, buttonEl) {
+    // Update active tab button
+    const buttons = document.querySelectorAll('.filter-tab-pill');
+    buttons.forEach(b => b.classList.remove('active'));
+    buttonEl.classList.add('active');
+
+    // Filter items
+    const items = document.querySelectorAll('.companion-item-col');
+    items.forEach(item => {
+      const itemCat = item.getAttribute('data-category');
+      if (category === 'all' || itemCat.toLowerCase().includes(category.toLowerCase())) {
+        item.style.display = 'block';
+        item.style.animation = 'fadeInCard 0.4s ease forwards';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+</script>
+{% endblock %}
