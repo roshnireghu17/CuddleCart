@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CuddleCart — Soft Toy E-Commerce Web Application
 
 **CuddleCart** is a complete, full-stack e-commerce web platform specifically designed for purchasing handcrafted soft toys and plush companions. Built as a full-featured MCA academic project, it incorporates a clean Model-View-Template (MVT) architecture, relational database design with MySQL configuration, role-based authentication (Customer and Admin), responsive Bootstrap 5 frontend with custom aesthetic styling, end-to-end shopping cart and wishlist systems, address management, 4-step checkout, interactive mock payment gateway simulation, order lifecycle tracking, inventory stock deduction/restoration, verified-purchase review gates, and a dedicated custom admin management console.
@@ -283,3 +284,6 @@ cuddlecart_django_project/
     │   └── shop/css/style.css    # Custom pastel theme and animations
     └── media/                    # Uploaded product and category photography
 ```
+=======
+# CuddleCart
+>>>>>>> bfdc123fad7d8ff178cf4ab9630a411ffd2ade4f
